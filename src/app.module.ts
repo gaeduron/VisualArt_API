@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ObservationTypeModule } from './observation-type/observation-type.module';
+import { UserModule } from './users/users.module';
 
 @Module({
-  imports: [ObservationTypeModule],
+  imports: [ObservationTypeModule, UserModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ObservationTypeModule } from './observation-type.module';
 import { ObservationType } from './entities/observation-type.entity'
 
 @Injectable()
