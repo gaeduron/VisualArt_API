@@ -1,27 +1,24 @@
-import { Controller, Post, Body, Get} from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Delete, Param} from '@nestjs/common';
 import { UserService } from './users.service'
-import { User } from './entities/users.entity'
 import { CreateUserDto } from './dto/create-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { ApiParam, ApiTags} from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
 
+@ApiTags("user")
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('register')
-  register(@Body() createUserDto: CreateUserDto): string {
-    if (createUserDto['email'] && createUserDto['password']) {
-      return this.userService.addOne({email: createUserDto['email'], password: createUserDto['password']})
-      // return `Hello ${createUserDto['email']} your account as been created.
-      //         <br><br>
-      //         You can connect on /user/login with:<br>{ "email": string, "password": string }`
-    }
-    return `To create an account please send:<br>{ "email": string, "password": string }`
+  register(@Body() createUserDto: CreateUserDto) {
+    return this.userService.addOne(createUserDto);
   }
 
   @Post('login')
-  login(@Body() body: object): string {
-    if (body['email'] && body['password']) {
-      return `Hello ${body['email']} your are now connected`
+  login(@Body() loginUserDto: LoginUserDto) {
+    if (loginUserDto['email'] && loginUserDto['password']) {
+      return `Hello ${loginUserDto['email']} your are now connected`
     }
     return `To login to your account please send:<br>{ "email": string, "password": string }
       <br><br>
@@ -29,7 +26,25 @@ export class UserController {
   }
 
   @Get()
-  accounts(): User[] {
+  findAll() {
     return this.userService.findAll()
+  }
+
+  @Get(':id')
+  @ApiParam({name: "id", type: 'string'})
+  findOne(@Param() params) {
+    return this.userService.findOne(params["id"])
+  }
+
+  @Patch(':id')
+  @ApiParam({name: "id", type: 'string'})
+  update(@Param() params, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(params["id"], updateUserDto)
+  }
+
+  @Delete(':id')
+  @ApiParam({name: "id", type: 'string'})
+  delete(@Param() params) {
+    return this.userService.remove(params["id"])
   }
 }

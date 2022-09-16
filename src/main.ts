@@ -15,6 +15,7 @@ async function bootstrap() {
     .setTitle('VisArt')
     .setDescription('VisArt tools to evaluate observation drawings')
     .setVersion('1.0')
+    .addTag('user', 'All users routes')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
