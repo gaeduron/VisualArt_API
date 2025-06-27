@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { Stage, Layer, Line } from 'react-konva';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { DrawingLine, CanvasConfig, BrushSettings, Point } from './types';
@@ -9,6 +9,7 @@ import ResponsiveCanvas, { CanvasScalingAPI } from './ResponsiveCanvas';
 interface DrawingCanvasProps {
   config: CanvasConfig;
   brushSettings: BrushSettings;
+  lines: DrawingLine[];
   onLinesChange?: (lines: DrawingLine[]) => void;
 }
 
@@ -96,13 +97,25 @@ const createNewLine = (point: Point, brushSettings: BrushSettings, lineId: numbe
  * INVARIANTS: Lines array is immutable, each line has unique ID
  * GHOST STATE: Drawing session state (start/continue/end)
  */
-const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasProps) => {
-  const [lines, setLines] = useState<DrawingLine[]>([]);
+const DrawingCanvas = ({ config, brushSettings, lines, onLinesChange }: DrawingCanvasProps) => {
   const isDrawing = useRef(false);
   const lineIdCounter = useRef(0);
+  
+  // Local state for immediate rendering during drawing
+  const [currentLines, setCurrentLines] = useState<DrawingLine[]>(lines);
+  
+  // Sync with prop changes (from undo/redo)
+  useEffect(() => {
+    setCurrentLines(lines);
+  }, [lines]);
 
-  const updateLines = useCallback((newLines: DrawingLine[]) => {
-    setLines(newLines);
+  const updateLinesTemporary = useCallback((newLines: DrawingLine[]) => {
+    // Update local state for immediate rendering
+    setCurrentLines(newLines);
+  }, []);
+
+  const pushToHistory = useCallback((newLines: DrawingLine[]) => {
+    // Push to history when line is complete
     onLinesChange?.(newLines);
   }, [onLinesChange]);
 
@@ -120,7 +133,7 @@ const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasPr
       if (point) {
         isDrawing.current = true;
         const newLine = createNewLine(point, brushSettings, ++lineIdCounter.current);
-        updateLines([...lines, newLine]);
+        updateLinesTemporary([...currentLines, newLine]);
       }
     };
 
@@ -140,30 +153,34 @@ const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasPr
       if (!isDrawing.current && isMousePressed(e)) {
         isDrawing.current = true;
         const newLine = createNewLine(point, brushSettings, ++lineIdCounter.current);
-        updateLines([...lines, newLine]);
+        updateLinesTemporary([...currentLines, newLine]);
         return;
       }
 
       // Continue drawing on current line
       if (isDrawing.current) {
-        const updatedLines = [...lines];
+        const updatedLines = [...currentLines];
         const lastLine = updatedLines[updatedLines.length - 1];
         lastLine.points.push(point);
         applyRealTimeSmoothing(lastLine.points, 1);
-        updateLines(updatedLines);
+        updateLinesTemporary(updatedLines);
       }
     };
 
-         const handleMouseUp = () => {
-       isDrawing.current = false;
-     };
+    const handleMouseUp = () => {
+      if (isDrawing.current && currentLines.length > 0) {
+        // Push completed line to history
+        pushToHistory(currentLines);
+      }
+      isDrawing.current = false;
+    };
 
     const handleMouseLeave = () => {
       isDrawing.current = false;
     };
 
     return { handleMouseDown, handleMouseMove, handleMouseUp, handleMouseLeave };
-  }, [lines, config, brushSettings, updateLines, getCanvasPoint]);
+  }, [currentLines, config, brushSettings, updateLinesTemporary, pushToHistory, getCanvasPoint]);
 
   return (
     <ResponsiveCanvas 
@@ -188,7 +205,7 @@ const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasPr
             {...scaling.getStageScaling()}
           >
             <Layer>
-              {lines.map((line) => (
+              {currentLines.map((line) => (
                 <Line
                   key={line.id}
                   points={line.points.flatMap(p => [p.x, p.y])}

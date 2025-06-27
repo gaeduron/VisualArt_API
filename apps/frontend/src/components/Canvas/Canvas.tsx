@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import DrawingCanvas from './DrawingCanvas';
-import { DrawingLine, CanvasConfig, BrushSettings } from './types';
+import UndoRedoControls from './components/UndoRedoControls';
+import { CanvasConfig, BrushSettings } from './types';
+import { useUndoRedo } from './hooks/useUndoRedo';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 /**
  * INTENTION: Orchestrate canvas system, manage drawing state and tool settings
  * REQUIRES: None (uses sensible defaults)
- * MODIFIES: Drawing lines state
- * EFFECTS: Renders complete canvas interface with tools
+ * MODIFIES: Drawing lines state with undo/redo history
+ * EFFECTS: Renders complete canvas interface with tools and keyboard shortcuts
  * RETURNS: JSX canvas system
  * 
  * ASSUMPTIONS: Default settings match spec requirements
@@ -16,7 +19,6 @@ import { DrawingLine, CanvasConfig, BrushSettings } from './types';
  * GHOST STATE: Future tool state (color palette, eraser, etc.)
  */
 const Canvas = () => {
-  // Step 1: 1000x1000px canvas with 2px black brush (doubled resolution for smoother drawing)
   const canvasConfig: CanvasConfig = {
     width: 1000,
     height: 1000,
@@ -24,25 +26,28 @@ const Canvas = () => {
   };
 
   const [brushSettings] = useState<BrushSettings>({
-    color: '#000000', // Black as specified
-    width: 4 // 2px as specified
+    color: '#000000',
+    width: 4
   });
 
-  const [lines, setLines] = useState<DrawingLine[]>([]);
+  const { current: lines, pushToHistory, undo, redo, canUndo, canRedo } = useUndoRedo([]);
+  useKeyboardShortcuts(undo, redo);
 
   return (
     <div className="flex flex-col items-center gap-6 p-8">
-      
       <DrawingCanvas
         config={canvasConfig}
         brushSettings={brushSettings}
-        onLinesChange={setLines}
+        lines={lines}
+        onLinesChange={pushToHistory}
       />
       
-      {/* Future: Tools will go here */}
-      <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-        Lines drawn: {lines.length}
-      </div>
+      <UndoRedoControls
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+      />
     </div>
   );
 };

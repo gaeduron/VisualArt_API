@@ -19,9 +19,9 @@ The goal is to be as simple as possible in feature and in code complexity.
 ## process:
 Let's build this progressively to make it easy to review for the human. he can't review more than 100 lines at a time so let's do things incrementally.
 
-step 1:
+step 1 (completed):
 - Have a square canvas 500x500px by default
 - Pixel brush, 2px wide, with the color #000000 by default
 
 step 2:
-- suggest a next feature we can add, we are going to do them one by one
+- Undo and Redo buttons with support for shortcuts (ctrl+z and ctrl+maj+z respectively on mac use command)
