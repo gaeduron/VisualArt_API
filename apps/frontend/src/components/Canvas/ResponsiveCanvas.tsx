@@ -36,7 +36,7 @@ export interface CanvasScalingAPI {
  * 
  * EXAMPLE USAGE:
  * ```tsx
- * <ResponsiveCanvas logicalWidth={500} logicalHeight={500}>
+ * <ResponsiveCanvas logicalWidth={1000} logicalHeight={1000}>
  *   {(scaling) => (
  *     <Stage 
  *       width={scaling.getVisualDimensions().width}
@@ -96,8 +96,8 @@ const ResponsiveCanvas = ({
   };
 
   return (
-    <div className={className} style={{ maxWidth: `${logicalWidth}px` }}>
-      <div ref={containerRef} className="w-full aspect-square">
+    <div className={className} style={{ width: '500px', height: '500px' }}>
+      <div ref={containerRef} className="w-full h-full">
         {children(scalingAPI)}
       </div>
     </div>

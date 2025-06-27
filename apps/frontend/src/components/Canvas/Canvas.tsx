@@ -16,16 +16,16 @@ import { DrawingLine, CanvasConfig, BrushSettings } from './types';
  * GHOST STATE: Future tool state (color palette, eraser, etc.)
  */
 const Canvas = () => {
-  // Step 1: 500x500px canvas with 2px black brush
+  // Step 1: 1000x1000px canvas with 2px black brush (doubled resolution for smoother drawing)
   const canvasConfig: CanvasConfig = {
-    width: 500,
-    height: 500,
+    width: 1000,
+    height: 1000,
     backgroundColor: '#ffffff'
   };
 
   const [brushSettings] = useState<BrushSettings>({
     color: '#000000', // Black as specified
-    width: 2 // 2px as specified
+    width: 4 // 2px as specified
   });
 
   const [lines, setLines] = useState<DrawingLine[]>([]);

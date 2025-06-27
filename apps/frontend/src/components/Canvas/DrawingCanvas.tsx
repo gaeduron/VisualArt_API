@@ -36,6 +36,39 @@ const isMousePressed = (e: KonvaEventObject<MouseEvent | TouchEvent>): boolean =
 };
 
 /**
+ * INTENTION: Apply real-time smoothing to point n-1 using neighbor averaging
+ * REQUIRES: points array with at least 3 points
+ * MODIFIES: The second-to-last point in the points array
+ * EFFECTS: Point n-1 becomes weighted average of points n-2, n-1, and n
+ * RETURNS: void (mutates input array)
+ * 
+ * ALGORITHM: Real-time neighbor averaging
+ * - Only smooths point n-1 (second to last) when n is added
+ * - Uses 3-point moving average with configurable strength
+ * - Provides immediate smooth feedback during drawing
+ * ASSUMPTIONS: Called during active drawing with sufficient points
+ */
+const applyRealTimeSmoothing = (points: Point[], strength: number = 0.5): void => {
+  if (points.length < 3) return;
+  
+  const smoothIndex = points.length - 2; // Point n-1 (second to last)
+  
+  // Get the three points: n-2, n-1, n
+  const prev = points[smoothIndex - 1];
+  const current = points[smoothIndex];
+  const next = points[smoothIndex + 1];
+  
+  // Apply neighbor averaging
+  const avgX = (prev.x + current.x + next.x) / 3;
+  const avgY = (prev.y + current.y + next.y) / 3;
+  
+  points[smoothIndex] = {
+    x: current.x * (1 - strength) + avgX * strength,
+    y: current.y * (1 - strength) + avgY * strength
+  };
+};
+
+/**
  * INTENTION: Create a new drawing line at the specified point
  * REQUIRES: Valid point coordinates and brush settings
  * MODIFIES: None (pure function)
@@ -116,13 +149,14 @@ const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasPr
         const updatedLines = [...lines];
         const lastLine = updatedLines[updatedLines.length - 1];
         lastLine.points.push(point);
+        applyRealTimeSmoothing(lastLine.points, 1);
         updateLines(updatedLines);
       }
     };
 
-    const handleMouseUp = () => {
-      isDrawing.current = false;
-    };
+         const handleMouseUp = () => {
+       isDrawing.current = false;
+     };
 
     const handleMouseLeave = () => {
       isDrawing.current = false;
@@ -160,7 +194,6 @@ const DrawingCanvas = ({ config, brushSettings, onLinesChange }: DrawingCanvasPr
                   points={line.points.flatMap(p => [p.x, p.y])}
                   stroke={line.color}
                   strokeWidth={line.width}
-                  tension={0.5}
                   lineCap="round"
                   lineJoin="round"
                   globalCompositeOperation="source-over"
