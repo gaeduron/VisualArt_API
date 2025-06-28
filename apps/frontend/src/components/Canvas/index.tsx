@@ -4,6 +4,7 @@ import { useState } from 'react';
 import DrawingCanvas from './components/DrawingCanvas';
 import UndoRedoControls from './components/UndoRedoControls';
 import ToolSelector from './components/ToolSelector';
+import ClearCanvasButton from './components/ClearCanvasButton';
 import { CanvasConfig, ToolSettings, DrawingTool } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -46,6 +47,11 @@ const Canvas = () => {
   };
 
   const { current: lines, pushToHistory, undo, redo, canUndo, canRedo } = useUndoRedo([]);
+  
+  const clearCanvas = () => {
+    pushToHistory([]);
+  };
+
   useKeyboardShortcuts(undo, redo);
   useToolShortcuts(setCurrentTool);
 
@@ -69,6 +75,11 @@ const Canvas = () => {
           onRedo={redo}
           canUndo={canUndo}
           canRedo={canRedo}
+        />
+
+        <ClearCanvasButton
+          onClear={clearCanvas}
+          disabled={lines.length === 0}
         />
       </div>
     </div>
