@@ -52,7 +52,7 @@ const Canvas = () => {
     pushToHistory([]);
   };
 
-  useKeyboardShortcuts(undo, redo);
+  useKeyboardShortcuts(undo, redo, clearCanvas);
   useToolShortcuts(setCurrentTool);
 
   return (
