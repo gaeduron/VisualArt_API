@@ -34,7 +34,7 @@ const Canvas = () => {
       return {
         tool: 'eraser',
         color: '#000000', // Color irrelevant for eraser (uses destination-out)
-        width: 20
+        width: 40
       };
     }
     
