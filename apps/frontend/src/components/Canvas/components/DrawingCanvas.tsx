@@ -1,10 +1,13 @@
 'use client';
 
 import { Stage, Layer, Line } from 'react-konva';
+import { KonvaEventObject } from 'konva/lib/Node';
 import { DrawingLine, CanvasConfig, ToolSettings } from '../types';
 import ResponsiveCanvas from './ResponsiveCanvas';
+import CustomCursor from './CustomCursor';
 import { useDrawingState } from '../hooks/useDrawingState';
 import { useDrawingEvents } from '../hooks/useDrawingEvents';
+import { useCursorTracking } from '../hooks/useCursorTracking';
 
 interface DrawingCanvasProps {
   config: CanvasConfig;
@@ -33,6 +36,14 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
     generateNextLineId 
   } = useDrawingState(lines, onLinesChange);
 
+  const {
+    cursorPosition,
+    isCursorVisible,
+    updateCursorPosition,
+    hideCursor,
+    showCursor
+  } = useCursorTracking();
+
   const { createEventHandlers } = useDrawingEvents({
     config,
     toolSettings,
@@ -51,18 +62,40 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
       {(scaling) => {
         const { handleMouseDown, handleMouseMove, handleMouseUp, handleMouseLeave } = createEventHandlers(scaling);
         
+        // Enhanced event handlers that also track cursor position
+        // TODO: Make this cleaner
+        const handleMouseMoveWithCursor = (e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+          handleMouseMove(e);
+          const stage = e.target.getStage();
+          const pointerPosition = stage?.getPointerPosition();
+          if (pointerPosition) {
+            const logicalPosition = scaling.screenToCanvas(pointerPosition);
+            updateCursorPosition(logicalPosition);
+          }
+        };
+
+        const handleMouseEnter = () => {
+          showCursor();
+        };
+
+        const handleMouseLeaveWithCursor = () => {
+          handleMouseLeave();
+          hideCursor();
+        };
+        
         return (
           <Stage
             width={scaling.getVisualDimensions().width}
             height={scaling.getVisualDimensions().height}
             onMouseDown={handleMouseDown}
-            onMousemove={handleMouseMove}
+            onMousemove={handleMouseMoveWithCursor}
             onMouseup={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeaveWithCursor}
             onTouchStart={handleMouseDown}
-            onTouchMove={handleMouseMove}
+            onTouchMove={handleMouseMoveWithCursor}
             onTouchEnd={handleMouseUp}
-            className="bg-white cursor-crosshair w-full h-full"
+            className="bg-white cursor-none w-full h-full"
             {...scaling.getStageScaling()}
           >
             <Layer>
@@ -81,6 +114,11 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
                   }
                 />
               ))}
+              <CustomCursor 
+                position={cursorPosition}
+                isVisible={isCursorVisible}
+                toolSettings={toolSettings}
+              />
             </Layer>
           </Stage>
         );
