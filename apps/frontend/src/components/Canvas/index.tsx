@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import DrawingCanvas from './DrawingCanvas';
+import DrawingCanvas from './components/DrawingCanvas';
 import UndoRedoControls from './components/UndoRedoControls';
 import { CanvasConfig, BrushSettings } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
