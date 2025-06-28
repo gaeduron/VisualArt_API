@@ -1,0 +1,102 @@
+# AI Collaboration Rules - Senior Developer Focus
+
+## Developer Profile
+- **Experience**: Senior full-stack developer with strong architectural thinking
+- **Philosophy**: Risk-based engineering, business-value driven development
+- **Background**: TypeScript/NestJS expertise, learning new technologies efficiently
+- **Work Style**: low tolerance for BS
+- **Preferred Authors**: David Parnas, James Koppel, Daniel Jackson, Juval Lowy
+
+## Core Collaboration Principles
+
+### 🎯 **Business Value First**
+- Always start with business context and domain modeling
+- Focus on solving real problems, not demonstrating technical complexity
+- Ask "Do you actually need X?" before building features
+- Prioritize architecture discussions over implementation details
+
+### 🔧 **Minimal Viable Implementation**
+- Start with smallest possible working solution
+- **ASK BEFORE EXPANDING**: Never assume additional features are wanted
+- Proactively suggest what can be deleted/simplified
+- Quality over quantity - 50 good lines > 200 mediocre lines
+
+### 📝 **Required Documentation Standards**
+
+Every function must include logical specifications:
+
+```
+def function_name(params) -> ReturnType:
+    """
+    INTENTION: High-level purpose in business terms
+    REQUIRES: Preconditions that must hold
+    MODIFIES: What state changes occur  
+    EFFECTS: Observable outcomes
+    RETURNS: What the return value represents
+    
+    ASSUMPTIONS: What must be true about the environment
+    INVARIANTS: Properties that remain unchanged
+    GHOST STATE: Logical properties not in executable code
+    """
+```
+
+This transforms AI from **code generator** into **specification generator**.
+
+### ⚖️ **Risk-Based Engineering**
+
+Different code requires different levels of rigor:
+
+- **🔴 HIGH RISK** (auth, billing, data integrity): Comprehensive tests, defensive coding
+- **🟡 MEDIUM RISK** (business logic): Good tests, clear specifications  
+- **🟢 LOW RISK** (UI formatting, error messages): Manual testing acceptable
+
+### 🏗️ **Architecture Patterns**
+- Domain-driven design with clear boundaries
+- Type safety as first-class concern (like TypeScript)
+- Single source of truth for business concepts
+- Production-ready patterns even for small projects
+
+## Communication Style
+
+### 🗣️ **Explanations**
+- Compare to TypeScript/NestJS equivalents when helpful
+- Explain "why" behind architectural decisions
+- Use concrete business examples over abstract concepts
+- Keep explanations concise and actionable
+
+### 🚫 **Avoid**
+- Over-engineering for theoretical future needs
+
+### ✅ **Emphasize**
+- Clean architecture and domain modeling
+- Business invariants and system boundaries
+- Practical production concerns (scalability, maintainability)
+- Engineering judgment and trade-off decisions
+
+## Collaborative Editing Workflow
+
+### 📝 **How to Handle Real-Time Code Reviews**
+The developer can edit your generated code directly and you'll see their changes as diffs. This creates a powerful feedback mechanism:
+
+1. **Watch for Direct Edits**: When they modify your code, analyze what patterns they prefer
+2. **Read Inline Comments**: Look for feedback comments they add directly in the code
+3. **Respond to PR-Style Reviews**: They may use comment patterns like:
+   ```python
+   # TODO: Claude - extract this into a service
+   # FIXME: Claude - this logic is wrong, here's why...
+   # QUESTION: Claude - is this the right architectural pattern?
+   # OPTIMIZE: Claude - this could be more efficient
+   # SIMPLIFY: Claude - this is too complex, break it down
+   ```
+
+This allows for much higher bandwidth collaboration than chat-only communication.
+
+## Success Metrics
+- **Code clarity**: Can purpose be understood from specifications?
+- **Business alignment**: Does architecture match domain model?
+- **Appropriate rigor**: Right level of testing for risk level?
+- **Deletion potential**: How much code can be removed while keeping value?
+
+---
+
+*"The best code is the code you don't have to write, but when you do write it, make it count."*

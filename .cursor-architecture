@@ -1,0 +1,443 @@
+# James Koppel's Software Architecture Principles - Cursor Rules
+
+## Core Philosophy
+
+James Koppel's approach to software architecture is grounded in programming language theory, formal methods, and program synthesis. Unlike conventional approaches (TDD, DDD, Clean Architecture), his philosophy focuses on the **logical layer** - the intentions, assumptions, and invariants that exist between high-level goals and concrete implementation.
+
+## Key Definitions & Vocabulary
+
+### **The Three Levels of Software**
+
+**Level 1 - Runtime**: Specific executions, concrete values, and states from a single program run.
+```typescript
+// Runtime level: x = 42, user.name = "Alice"
+const result = calculateTax(42, "Alice");
+```
+
+**Level 2 - Code/Concrete Implementation**: What the current implementation could do with arbitrary inputs.
+```typescript
+// Code level: function signature, control flow, data structures
+function calculateTax(income: number, name: string): number {
+    if (income > 50000) return income * 0.3;
+    return income * 0.2;
+}
+```
+
+**Level 3 - Logic/Design**: Abstract specifications, intentions, and invariants independent of implementation.
+```typescript
+// Logic level: Tax calculation contract
+/**
+ * INTENTION: Calculate tax based on progressive brackets
+ * INVARIANT: result >= 0 && result <= income
+ * ASSUMPTION: income represents annual gross income in USD
+ * CONTRACT: For income > threshold, apply higher rate
+ */
+```
+
+### **Assumptions Management**
+
+**Assumption**: Something that must be true about the rest of the system for this code to work correctly.
+
+```typescript
+// BAD: Spreads 2D assumption throughout codebase
+function distance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+}
+
+// GOOD: Localizes the assumption
+interface Point { /* coordinates implementation hidden */ }
+function distance(p1: Point, p2: Point): number {
+    // Only this function needs to know about coordinate representation
+}
+```
+
+**Essential vs Incidental Assumptions**:
+- **Essential**: `Point` must have some notion of distance
+- **Incidental**: `Point` is stored as `{x: number, y: number}` vs `[number, number]`
+
+### **Anti-unification vs True Abstraction**
+
+**Anti-unification**: Mechanically extracting common syntactic patterns without conceptual understanding.
+
+```typescript
+// ANTI-UNIFICATION (BAD)
+function processUserData(data: any, type: 'email' | 'phone' | 'address') {
+    if (type === 'email') {
+        // validate email format
+        // send to email service
+    } else if (type === 'phone') {
+        // validate phone format  
+        // send to SMS service
+    } else if (type === 'address') {
+        // validate address format
+        // send to mail service
+    }
+}
+// This is "boxing" - same syntax, different concepts
+```
+
+```typescript
+// TRUE ABSTRACTION (GOOD)
+interface ContactMethod {
+    validate(): boolean;
+    send(message: string): Promise<void>;
+}
+
+class Email implements ContactMethod { /* */ }
+class Phone implements ContactMethod { /* */ }
+class Address implements ContactMethod { /* */ }
+// Same concept, different implementations
+```
+
+### **Ghost Code**
+
+**Ghost Code**: Variables, invariants, and logical properties that exist in your reasoning about the program but are not explicitly represented in the executable code. These are **essential for understanding** but **invisible in implementation**.
+
+You should **NOT avoid ghost code** - instead, you should **recognize and document it** because it represents crucial logical properties.
+
+```typescript
+// Executable code
+class BankAccount {
+    private balance: number = 0;
+    
+    withdraw(amount: number): boolean {
+        if (this.balance >= amount) {
+            this.balance -= amount;
+            return true;
+        }
+        return false;
+    }
+}
+
+// Ghost code (exists in reasoning, not in executable code)
+/**
+ * GHOST INVARIANT: totalSystemMoney = sum(all_accounts.balance) 
+ *   - This never changes during any transaction
+ *   - Not stored anywhere, but must always be true
+ * 
+ * GHOST STATE: account.wasEverOverdrawn
+ *   - Logical history that affects business rules
+ *   - May not be stored but affects what operations are allowed
+ * 
+ * GHOST PROOF: if withdraw() returns true, then old(balance) >= amount
+ *   - Logical relationship that must hold
+ *   - Not computed, but reasoned about
+ */
+```
+
+**The point**: Ghost code represents the **logical contracts and invariants** your system maintains. Make it explicit in comments and documentation so future maintainers understand the full logical model.
+
+### **Intent Recovery**
+
+**Intent Recovery**: The ease of reconstructing the programmer's original intention from code.
+
+```typescript
+// POOR INTENT RECOVERY
+if (user.age >= 65) { /* some logic */ }
+
+// GOOD INTENT RECOVERY  
+const RETIREMENT_AGE = 65;
+if (user.age >= RETIREMENT_AGE) { /* retirement logic */ }
+
+// EXCELLENT INTENT RECOVERY
+if (user.isEligibleForRetirement()) { /* retirement logic */ }
+```
+
+### **Openness vs Closedness**
+
+Both styles are valid - choose based on your **control requirements** and **evolution patterns**.
+
+**Use OPEN when**:
+- You want external extensibility
+- You can't predict all future variants
+- Performance is not critical
+- You trust users to provide correct implementations
+
+```typescript
+// OPEN: Anyone can add new strategies
+interface PaymentProcessor {
+    process(amount: number): Promise<PaymentResult>;
+}
+
+// Easy to add: CryptoPayment, BankTransfer, etc. without changing core code
+const processor: PaymentProcessor = new CreditCardProcessor();
+```
+
+**Use CLOSED when**:
+- You need to control all variants (security, consistency)
+- You want exhaustive handling (compiler catches missing cases)
+- You need serialization/persistence
+- You want to analyze or transform all possible cases
+
+```typescript
+// CLOSED: All payment types controlled and enumerable
+enum PaymentType { CREDIT_CARD, PAYPAL, BANK_TRANSFER }
+
+interface Payment {
+    type: PaymentType;
+    amount: number;
+    // Compiler ensures all cases are handled
+    // Can serialize/deserialize easily
+    // Can analyze all possible payment flows
+}
+```
+
+**Heuristic**: Start CLOSED for core business logic you control, use OPEN for extension points you want others to implement.
+
+### **Defunctionalization & Refunctionalization**
+
+**The point**: These are **design transformation techniques** that help you move between different architectural styles while preserving semantics.
+
+**Defunctionalization** - When you need **control, serialization, or analysis**:
+```typescript
+// BEFORE: Flexible but uncontrollable
+const validations = [
+    (user: User) => user.age >= 18,
+    (user: User) => user.email.includes('@'),
+    (user: User) => user.hasAcceptedTerms
+];
+
+// AFTER: Controllable and serializable
+enum ValidationType { MIN_AGE, EMAIL_FORMAT, TERMS_ACCEPTED }
+interface ValidationRule {
+    type: ValidationType;
+    parameters?: any;
+}
+
+// Now you can: store rules in database, send over network, 
+// analyze all possible validations, etc.
+```
+
+**Refunctionalization** - When you need **simplicity and composability**:
+```typescript
+// BEFORE: Complex state machine
+interface ConnectionState {
+    status: 'connecting' | 'connected' | 'disconnected' | 'error';
+    retryCount: number;
+    lastError?: string;
+}
+
+// AFTER: Simple function composition
+type ConnectionHandler = () => Promise<Connection>;
+const withRetry = (handler: ConnectionHandler, maxRetries: number) => 
+    async () => { /* retry logic */ };
+const withLogging = (handler: ConnectionHandler) => 
+    async () => { /* logging logic */ };
+
+// Cleaner composition of behaviors
+```
+
+## The RAD Process
+
+**R** - **Reduce Assumptions**: Minimize dependencies between components
+**A** - **Add Openness**: Make systems extensible without modification  
+**D** - **Diminish Complexity Ratchets**: Avoid irreversible complexity increases
+
+Consider a notification system that initially only supports email:
+
+```typescript
+// INITIAL (violates RAD principles)
+class NotificationService {
+    sendEmail(user: User, subject: string, body: string) {
+        // Direct email sending logic
+        // ASSUMPTION LEAK: Assumes users always have email
+        // CLOSED: Hard to add SMS, push notifications  
+        // COMPLEXITY RATCHET: Email logic mixed with business logic
+    }
+}
+```
+
+**Applying RAD**:
+
+```typescript
+// REDUCE ASSUMPTIONS
+interface ContactMethod {
+    // Don't assume email - abstract the contact concept
+    canReach(user: User): boolean;
+    send(message: Message): Promise<DeliveryResult>;
+}
+
+// ADD OPENNESS  
+class NotificationService {
+    constructor(private methods: ContactMethod[]) {}
+    
+    async notify(user: User, message: Message) {
+        // Open to new contact methods without changing this code
+        const availableMethod = this.methods.find(m => m.canReach(user));
+        if (availableMethod) {
+            return availableMethod.send(message);
+        }
+    }
+}
+
+// DIMINISH COMPLEXITY RATCHETS
+class EmailContactMethod implements ContactMethod {
+    // Email complexity isolated here
+    // Can be replaced/improved without affecting notification logic
+    // Business logic separated from transport logic
+}
+
+class SMSContactMethod implements ContactMethod {
+    // Adding SMS doesn't increase complexity of existing code
+    // No irreversible changes to the core system
+}
+```
+
+## Koppel's 11 Aspects of Good Code
+
+### External Properties
+
+1. **Done Code**: Accomplishes its intended purpose
+2. **Understandable**: Readable by those who need to work with it
+3. **Evolvable**: Easy to extend, difficult to break
+
+### Internal Properties
+
+4. **Modular Understanding**: Each piece can be understood in isolation
+```typescript
+// BAD: Must understand entire system to verify this function
+function processOrder(order: Order) {
+    // Assumes global state, specific initialization order, etc.
+}
+
+// GOOD: Clear preconditions and postconditions
+function processOrder(order: ValidatedOrder): ProcessedOrder {
+    // Pre: order has been validated
+    // Post: returns processed order or throws specific error
+}
+```
+
+5. **Intent Recovery**: Easy to reconstruct programmer's intention
+6. **Single Place Intent**: Each intention expressed exactly once
+7. **Robust**: Resistant to misuse and errors
+8. **Hides Secrets**: Encapsulates implementation details properly
+9. **Isolates Assumptions**: Minimizes knowledge dependencies
+10. **Open**: Agnostic to the size of sets it operates on
+11. **Uses Programmer's Wisdom**: Leverages full available expertise
+
+## Anti-Patterns to Avoid
+
+### **Boxing Refactoring**
+```typescript
+// BOXING (BAD) - putting mess in a box
+function handleUserAction(action: string, data: any) {
+    if (action === 'login') { /* login logic */ }
+    else if (action === 'logout') { /* logout logic */ }  
+    else if (action === 'register') { /* register logic */ }
+    // This function has no coherent meaning beyond "stuff users do"
+}
+```
+
+### **Superficial DRY Application**
+
+The point: **Same code doesn't mean same concept**. Don't merge code just because it looks similar.
+
+```typescript
+// BAD: Merging different concepts because they look similar
+function checkNumber(value: number, threshold: number): boolean {
+    return value >= threshold;
+}
+
+// Used as:
+const canVote = checkNumber(user.age, 18);        // Legal concept
+const isHot = checkNumber(temperature, 80);       // Physical concept  
+const canRetire = checkNumber(user.age, 65);      // Benefits concept
+
+// PROBLEM: What happens when voting age changes? Or retirement age?
+// You'd need to find all usages and figure out which concept each represents
+```
+
+```typescript
+// GOOD: Same concept, different implementations
+abstract class Shape {
+    abstract area(): number;  // Same concept: "area calculation"
+}
+
+class Rectangle extends Shape {
+    area() { return this.width * this.height; }     // Different implementation
+}
+
+class Circle extends Shape {  
+    area() { return Math.PI * this.radius ** 2; }   // Different implementation
+}
+
+// These SHOULD share code because they represent the same business concept
+```
+
+**The rule**: Merge code when it represents the **same logical concept**, not when it has the **same syntax**. Different concepts should remain separate even if they look identical.
+
+### **Assumption Leakage**
+```typescript
+// BAD: Internal representation leaks everywhere
+interface User {
+    firstName: string;
+    lastName: string;
+    emailString: string; // Assumes email is always a string
+}
+
+// GOOD: Hide representation, expose behavior
+interface User {
+    getFullName(): string;
+    getContactEmail(): Email; // Type encapsulates validation
+    canReceiveEmail(): boolean;
+}
+```
+
+## Practical Guidelines
+
+### **Code Review Focus**
+- Review **interfaces and assumptions**, not implementation details
+- Ask: "What must be true for this code to work correctly?"
+- Identify: "What happens if we need to change X in the future?"
+
+### **Design Documentation**
+```typescript
+/**
+ * INTENTION: Manage user authentication state
+ * ASSUMPTIONS: 
+ *   - Users have unique identifiers
+ *   - Session tokens expire
+ *   - Network requests may fail
+ * INVARIANTS:
+ *   - At most one user logged in per session
+ *   - Expired tokens are never considered valid
+ * EVOLUTION CONSTRAINTS:
+ *   - Must support adding new authentication methods
+ *   - Token format may change but expiration concept remains
+ */
+class AuthenticationManager {
+    // Implementation follows from the above specification
+}
+```
+
+### **Abstraction Validation**
+Before creating an abstraction, verify:
+1. **Clear mapping**: Can you explain how concrete maps to abstract?
+2. **Preserved operations**: Do abstract operations correspond to concrete ones?
+3. **Justified complexity**: Is the abstraction simpler than alternatives?
+
+## Testing Philosophy
+
+Focus on **logical level** properties, not implementation details:
+
+```typescript
+// BAD: Tests implementation
+expect(userService.validateEmail).toHaveBeenCalledTimes(1);
+
+// GOOD: Tests contract
+expect(result.isValid).toBe(true);
+expect(result.errors).toBeEmpty();
+```
+
+## Maintenance Mindset
+
+> "Software maintenance is important because the world runs on software, and changing the world means changing the software."
+
+- Design for **modification**, not just extension
+- Isolate **decisions** that are likely to change
+- Make **assumptions** locally modifiable
+- Track **dependencies** between logical components
+
+---
+
+*"The logical layer may be hidden, but it's not mystic: we have over 40 years of theory behind it. When you learn to see the reasoning behind your system as plainly as the code, then you have achieved software enlightenment."* - James Koppel
