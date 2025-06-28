@@ -2,14 +2,14 @@
 
 import { useCallback } from 'react';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { CanvasConfig, BrushSettings, DrawingLine } from '../types';
+import { CanvasConfig, ToolSettings, DrawingLine } from '../types';
 import { CanvasScalingAPI } from '../components/ResponsiveCanvas';
 import { isPointWithinBounds, applyRealTimeSmoothing, createNewLine } from '../utils/drawingHelpers';
 import { isMousePressed, getCanvasPoint } from '../utils/canvasGeometry';
 
 interface UseDrawingEventsProps {
   config: CanvasConfig;
-  brushSettings: BrushSettings;
+  toolSettings: ToolSettings;
   currentLines: DrawingLine[];
   isDrawing: { current: boolean };
   updateLinesTemporary: (lines: DrawingLine[]) => void;
@@ -33,7 +33,7 @@ interface UseDrawingEventsProps {
  */
 export const useDrawingEvents = ({
   config,
-  brushSettings,
+  toolSettings,
   currentLines,
   isDrawing,
   updateLinesTemporary,
@@ -48,7 +48,7 @@ export const useDrawingEvents = ({
       
       if (point) {
         isDrawing.current = true;
-        const newLine = createNewLine(point, brushSettings, getNextLineId());
+        const newLine = createNewLine(point, toolSettings, getNextLineId());
         updateLinesTemporary([...currentLines, newLine]);
       }
     };
@@ -67,7 +67,7 @@ export const useDrawingEvents = ({
       // Edge Case: Handle re-entry while mouse is pressed
       if (!isDrawing.current && isMousePressed(e)) {
         isDrawing.current = true;
-        const newLine = createNewLine(point, brushSettings, getNextLineId());
+        const newLine = createNewLine(point, toolSettings, getNextLineId());
         updateLinesTemporary([...currentLines, newLine]);
         return;
       }
@@ -98,7 +98,7 @@ export const useDrawingEvents = ({
       handleMouseUp: finishDrawing, 
       handleMouseLeave: stopDrawing 
     };
-  }, [config, brushSettings, currentLines, isDrawing, updateLinesTemporary, pushToHistory, getNextLineId]);
+  }, [config, toolSettings, currentLines, isDrawing, updateLinesTemporary, pushToHistory, getNextLineId]);
 
   return { createEventHandlers };
 }; 

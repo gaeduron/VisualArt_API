@@ -23,7 +23,7 @@ export interface DrawingLine {
   tool: DrawingTool;
 }
 
-export type DrawingTool = 'brush';
+export type DrawingTool = 'brush' | 'eraser';
 
 export interface CanvasConfig {
   width: number;
@@ -31,7 +31,8 @@ export interface CanvasConfig {
   backgroundColor: string;
 }
 
-export interface BrushSettings {
-  color: string;
+export interface ToolSettings {
+  tool: DrawingTool;
+  color?: string;
   width: number;
 }

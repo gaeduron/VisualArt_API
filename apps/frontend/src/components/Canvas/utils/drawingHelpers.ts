@@ -1,4 +1,4 @@
-import { DrawingLine, BrushSettings, Point, CanvasConfig } from '../types';
+import { DrawingLine, ToolSettings, Point, CanvasConfig } from '../types';
 
 /**
  * INTENTION: Check if point is within canvas boundaries
@@ -47,17 +47,17 @@ export const applyRealTimeSmoothing = (points: Point[], strength: number = 0.5):
 
 /**
  * INTENTION: Create a new drawing line at the specified point
- * REQUIRES: Valid point coordinates and brush settings
+ * REQUIRES: Valid point coordinates and tool settings
  * MODIFIES: None (pure function)
- * EFFECTS: Returns new line object
+ * EFFECTS: Returns new line object with appropriate tool settings
  * RETURNS: DrawingLine with duplicate start point for Konva rendering
  */
-export const createNewLine = (point: Point, brushSettings: BrushSettings, lineId: number): DrawingLine => {
+export const createNewLine = (point: Point, toolSettings: ToolSettings, lineId: number): DrawingLine => {
   return {
     id: `line_${lineId}`,
     points: [point, point], // Duplicate point for Konva visibility
-    color: brushSettings.color,
-    width: brushSettings.width,
-    tool: 'brush'
+    color: toolSettings.color || '#000000',
+    width: toolSettings.width,
+    tool: toolSettings.tool
   };
 }; 

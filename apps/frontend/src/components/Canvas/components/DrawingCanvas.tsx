@@ -1,14 +1,14 @@
 'use client';
 
 import { Stage, Layer, Line } from 'react-konva';
-import { DrawingLine, CanvasConfig, BrushSettings } from '../types';
+import { DrawingLine, CanvasConfig, ToolSettings } from '../types';
 import ResponsiveCanvas from './ResponsiveCanvas';
 import { useDrawingState } from '../hooks/useDrawingState';
 import { useDrawingEvents } from '../hooks/useDrawingEvents';
 
 interface DrawingCanvasProps {
   config: CanvasConfig;
-  brushSettings: BrushSettings;
+  toolSettings: ToolSettings;
   lines: DrawingLine[];
   onLinesChange?: (lines: DrawingLine[]) => void;
 }
@@ -24,7 +24,7 @@ interface DrawingCanvasProps {
  * INVARIANTS: Lines array is immutable, each line has unique ID
  * GHOST STATE: Drawing session state (start/continue/end)
  */
-const DrawingCanvas = ({ config, brushSettings, lines, onLinesChange }: DrawingCanvasProps) => {
+const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCanvasProps) => {
   const { 
     linesForRendering, 
     isDrawing, 
@@ -35,7 +35,7 @@ const DrawingCanvas = ({ config, brushSettings, lines, onLinesChange }: DrawingC
 
   const { createEventHandlers } = useDrawingEvents({
     config,
-    brushSettings,
+    toolSettings,
     currentLines: linesForRendering,
     isDrawing,
     updateLinesTemporary: updateForImmediateRendering,
@@ -74,7 +74,11 @@ const DrawingCanvas = ({ config, brushSettings, lines, onLinesChange }: DrawingC
                   strokeWidth={line.width}
                   lineCap="round"
                   lineJoin="round"
-                  globalCompositeOperation="source-over"
+                  globalCompositeOperation={
+                    line.tool === 'eraser' ?
+                    'destination-out'
+                    : 'source-over'
+                  }
                 />
               ))}
             </Layer>

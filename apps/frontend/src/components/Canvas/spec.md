@@ -12,7 +12,7 @@ Tools:
 - Undo
 - Redo
 - Eraser tool, 10px wide by default
-- eraser size can be changed between 2 size (6px, 20px)
+- eraser size can be changed between 2 size (8px, 80px)
 
 The goal is to be as simple as possible in feature and in code complexity.
 
