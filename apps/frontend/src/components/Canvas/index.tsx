@@ -7,8 +7,8 @@ import ToolSelector from './components/ToolSelector';
 import ClearCanvasButton from './components/ClearCanvasButton';
 import { CanvasConfig, ToolSettings, DrawingTool } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
-import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
-import { useToolShortcuts } from './hooks/useToolShortcuts';
+import { useCanvasActions } from './hooks/useCanvasActions';
+import { useShortcutRegistry } from '../../lib/shortcuts/useShortcutRegistry';
 
 /**
  * INTENTION: Orchestrate canvas system, manage drawing state and tool settings
@@ -52,8 +52,14 @@ const Canvas = () => {
     pushToHistory([]);
   };
 
-  useKeyboardShortcuts(undo, redo, clearCanvas);
-  useToolShortcuts(setCurrentTool);
+  const canvasActions = useCanvasActions({
+    undo,
+    redo,
+    clearCanvas,
+    setCurrentTool
+  });
+
+  useShortcutRegistry('canvas', canvasActions);
 
   return (
     <div className="flex flex-col items-center gap-6 p-8">
