@@ -18,7 +18,7 @@ export default function Home() {
         
         <Canvas />
         
-        <div className="text-center mt-12 text-gray-500">
+        <div className="text-center mt-16 text-gray-500">
           <p className="text-sm">More tools and features coming soon...</p>
         </div>
       </div>

@@ -63,30 +63,42 @@ const Canvas = () => {
 
   return (
     <div className="flex flex-col items-center gap-6 p-8">
-      <DrawingCanvas
-        config={canvasConfig}
-        toolSettings={getToolSettings()}
-        lines={lines}
-        onLinesChange={pushToHistory}
-      />
-      
-      <div className="flex gap-4">
-        <ToolSelector
-          currentTool={currentTool}
-          onToolChange={setCurrentTool}
-        />
-        
-        <UndoRedoControls
-          onUndo={undo}
-          onRedo={redo}
-          canUndo={canUndo}
-          canRedo={canRedo}
-        />
 
-        <ClearCanvasButton
-          onClear={clearCanvas}
-          disabled={lines.length === 0}
-        />
+        <div className="relative">
+          <DrawingCanvas
+            config={canvasConfig}
+            toolSettings={getToolSettings()}
+            lines={lines}
+            onLinesChange={pushToHistory}
+          />
+          
+          {/* Floating toolbar positioned at bottom left */}
+          <div className="flex gap-6 py-4">
+            <div className="absolute bg-white rounded-lg shadow-lg border p-3">
+              <div className="flex gap-2">
+                <ToolSelector
+                  currentTool={currentTool}
+                  onToolChange={setCurrentTool}
+                  />
+                
+                <div className="w-px bg-gray-200 mx-1"></div>
+                
+                <UndoRedoControls
+                  onUndo={undo}
+                  onRedo={redo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                  />
+                
+                <div className="w-px bg-gray-200 mx-1"></div>
+                
+                <ClearCanvasButton
+                  onClear={clearCanvas}
+                  disabled={lines.length === 0}
+                  />
+              </div>
+            </div>
+          </div>
       </div>
     </div>
   );

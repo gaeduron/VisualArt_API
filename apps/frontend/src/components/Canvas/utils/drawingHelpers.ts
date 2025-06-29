@@ -52,9 +52,9 @@ export const applyRealTimeSmoothing = (points: Point[], strength: number = 0.5):
  * EFFECTS: Returns new line object with appropriate tool settings
  * RETURNS: DrawingLine with duplicate start point for Konva rendering
  */
-export const createNewLine = (point: Point, toolSettings: ToolSettings, lineId: number): DrawingLine => {
+export const createNewLine = (point: Point, toolSettings: ToolSettings, lineId: string): DrawingLine => {
   return {
-    id: `line_${lineId}`,
+    id: lineId,
     points: [point, point], // Duplicate point for Konva visibility
     color: toolSettings.color || '#000000',
     width: toolSettings.width,

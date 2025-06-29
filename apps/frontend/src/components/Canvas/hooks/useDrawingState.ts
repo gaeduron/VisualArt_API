@@ -21,7 +21,7 @@ export const useDrawingState = (
   onHistoryChange?: (lines: DrawingLine[]) => void
 ) => {
   const isDrawing = useRef(false);
-  const lineIdCounter = useRef(0);
+  const lineIdCounter = useRef(Math.floor(Math.random() * 1000));
   
   const [linesForRendering, setLinesForRendering] = useState<DrawingLine[]>(initialLines);
   
@@ -38,7 +38,10 @@ export const useDrawingState = (
   }, [onHistoryChange]);
 
   const generateNextLineId = useCallback(() => {
-    return ++lineIdCounter.current;
+    // Generate unique ID using timestamp + counter to avoid duplicates
+    const timestamp = Date.now();
+    const id = `line_${timestamp}_${++lineIdCounter.current}`;
+    return id;
   }, []);
 
   return {

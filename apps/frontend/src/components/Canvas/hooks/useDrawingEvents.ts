@@ -14,7 +14,7 @@ interface UseDrawingEventsProps {
   isDrawing: { current: boolean };
   updateLinesTemporary: (lines: DrawingLine[]) => void;
   pushToHistory: (lines: DrawingLine[]) => void;
-  getNextLineId: () => number;
+  getNextLineId: () => string;
 }
 
 /**
