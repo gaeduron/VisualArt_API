@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import DrawingCanvas from './components/DrawingCanvas';
+import { useState, useRef } from 'react';
+import DrawingCanvas, { DrawingCanvasRef } from './components/DrawingCanvas';
 import UndoRedoControls from './components/UndoRedoControls';
 import ToolSelector from './components/ToolSelector';
 import ClearCanvasButton from './components/ClearCanvasButton';
+import ExportButton from './components/ExportButton';
 import { CanvasConfig, ToolSettings, DrawingTool } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useCanvasActions } from './hooks/useCanvasActions';
 import { useShortcutRegistry } from '../../lib/shortcuts/useShortcutRegistry';
+import { useCanvasExport } from './hooks/useCanvasExport';
 
 /**
  * INTENTION: Orchestrate canvas system, manage drawing state and tool settings
@@ -22,6 +24,7 @@ import { useShortcutRegistry } from '../../lib/shortcuts/useShortcutRegistry';
  * GHOST STATE: Future tool state (color palette, eraser, etc.)
  */
 const Canvas = () => {
+  const canvasRef = useRef<DrawingCanvasRef>(null);
   const canvasConfig: CanvasConfig = {
     width: 1000,
     height: 1000,
@@ -61,11 +64,22 @@ const Canvas = () => {
 
   useShortcutRegistry('canvas', canvasActions);
 
+  const stageRef = canvasRef.current?.getStageRef() || { current: null };
+  const { downloadPNG } = useCanvasExport({ 
+    stageRef, 
+    canvasName: 'drawing' 
+  });
+
+  const handleExport = async () => {
+    await downloadPNG({ backgroundColor: 'white' });
+  };
+
   return (
     <div className="flex flex-col items-center gap-6 p-8">
 
         <div className="relative">
           <DrawingCanvas
+            ref={canvasRef}
             config={canvasConfig}
             toolSettings={getToolSettings()}
             lines={lines}
@@ -91,11 +105,18 @@ const Canvas = () => {
                   />
                 
                 <div className="w-px bg-gray-200 mx-1"></div>
-                
+
                 <ClearCanvasButton
                   onClear={clearCanvas}
                   disabled={lines.length === 0}
-                  />
+                />
+                
+                <div className="w-px bg-gray-200 mx-1"></div>
+                
+                <ExportButton
+                  onExport={handleExport}
+                  disabled={lines.length === 0}
+                />
               </div>
             </div>
           </div>

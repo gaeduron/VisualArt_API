@@ -1,7 +1,9 @@
 'use client';
 
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { Stage, Layer, Line } from 'react-konva';
 import { KonvaEventObject } from 'konva/lib/Node';
+import type { Stage as KonvaStage } from 'konva/lib/Stage';
 import { DrawingLine, CanvasConfig, ToolSettings } from '../types';
 import ResponsiveCanvas from './ResponsiveCanvas';
 import CustomCursor from './CustomCursor';
@@ -16,6 +18,10 @@ interface DrawingCanvasProps {
   onLinesChange?: (lines: DrawingLine[]) => void;
 }
 
+export interface DrawingCanvasRef {
+  getStageRef: () => React.RefObject<KonvaStage | null>;
+}
+
 /**
  * INTENTION: Provide core drawing functionality with Konva
  * REQUIRES: Valid config and brushSettings
@@ -27,7 +33,12 @@ interface DrawingCanvasProps {
  * INVARIANTS: Lines array is immutable, each line has unique ID
  * GHOST STATE: Drawing session state (start/continue/end)
  */
-const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCanvasProps) => {
+const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(
+  (
+    { config, toolSettings, lines, onLinesChange },
+    ref
+  ) => {
+  const stageRef = useRef<KonvaStage>(null);
   const { 
     linesForRendering, 
     isDrawing, 
@@ -53,6 +64,10 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
     pushToHistory: commitToHistory,
     getNextLineId: generateNextLineId
   });
+
+  useImperativeHandle(ref, () => ({
+    getStageRef: () => stageRef
+  }), []);
 
   return (
     <ResponsiveCanvas 
@@ -85,6 +100,7 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
         
         return (
           <Stage
+            ref={stageRef}
             width={scaling.getVisualDimensions().width}
             height={scaling.getVisualDimensions().height}
             onMouseDown={handleMouseDown}
@@ -125,6 +141,8 @@ const DrawingCanvas = ({ config, toolSettings, lines, onLinesChange }: DrawingCa
       }}
     </ResponsiveCanvas>
   );
-};
+});
+
+DrawingCanvas.displayName = 'DrawingCanvas';
 
 export default DrawingCanvas; 
