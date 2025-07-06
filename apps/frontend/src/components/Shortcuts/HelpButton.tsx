@@ -1,7 +1,7 @@
 'use client';
 
 interface HelpButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 const HelpButton = ({ onClick }: HelpButtonProps) => {

@@ -13,7 +13,7 @@ const ShortcutHelp = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <HelpButton onClick={() => {}} />
+        <HelpButton />
       </DialogTrigger>
       <ShortcutModal shortcuts={shortcuts} />
     </Dialog>

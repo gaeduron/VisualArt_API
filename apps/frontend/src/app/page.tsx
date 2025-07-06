@@ -1,4 +1,4 @@
-import Canvas from '../components/Canvas';
+import CanvasLayout from '../components/Canvas/CanvasLayout';
 import ShortcutHelp from '../components/Shortcuts';
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
           </p>
         </div>
         
-        <Canvas />
+        <CanvasLayout />
         
         <div className="text-center mt-16 text-gray-500">
           <p className="text-sm">More tools and features coming soon...</p>

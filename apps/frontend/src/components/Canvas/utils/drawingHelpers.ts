@@ -25,7 +25,7 @@ export const isPointWithinBounds = (point: Point, config: CanvasConfig): boolean
  * - Provides immediate smooth feedback during drawing
  * ASSUMPTIONS: Called during active drawing with sufficient points
  */
-export const applyRealTimeSmoothing = (points: Point[], strength: number = 0.5): void => {
+export const applyRealTimeSmoothing = (points: Point[], strength = 0.5): void => {
   if (points.length < 3) return;
   
   const smoothIndex = points.length - 2; // Point n-1 (second to last)
