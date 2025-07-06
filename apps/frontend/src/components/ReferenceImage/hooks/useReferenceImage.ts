@@ -2,8 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
 
-const DEFAULT_IMAGE = '/reference-placeholder.svg';
-
 interface UseReferenceImageReturn {
   imageUrl?: string;
   isLoading: boolean;
@@ -40,7 +38,6 @@ export const useReferenceImage = (
     };
     img.onerror = () => {
       setError('Failed to load reference image');
-      setImageUrl(DEFAULT_IMAGE);
       setIsLoading(false);
     };
     img.src = url;
