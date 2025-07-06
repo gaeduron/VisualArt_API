@@ -1,7 +1,7 @@
 'use client';
 
 import Canvas from './index';
-import ReferenceImage from './components/ReferenceImage';
+import ReferenceImage from '../ReferenceImage';
 import { useReferenceImage } from './hooks/useReferenceImage';
 
 /**

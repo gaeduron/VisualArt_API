@@ -33,9 +33,6 @@ const ReferenceImage = ({
       {!imageUrl && !isLoading && !error && (
         <span className="text-gray-400 text-sm">No reference</span>
       )}
-      {error && !isLoading && (
-        <span className="text-red-500 text-sm">{error}</span>
-      )}
       {imageUrl && (
         <Image
           src={imageUrl}
@@ -45,6 +42,11 @@ const ReferenceImage = ({
           onLoadingComplete={onImageLoad}
           className={cn('object-contain', isLoading && 'hidden')}
         />
+      )}
+      {error && !isLoading && (
+        <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-red-500 text-sm">
+          {error}
+        </span>
       )}
     </div>
   );
