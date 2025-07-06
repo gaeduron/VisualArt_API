@@ -18,7 +18,7 @@ import { DrawingLine } from '../types';
  * - When redo: move current to undo, pop from redo
  * ASSUMPTIONS: States are immutable snapshots, memory usage controlled
  */
-export const useUndoRedo = (initialState: DrawingLine[], maxHistorySize: number = 50) => {
+export const useUndoRedo = (initialState: DrawingLine[], maxHistorySize = 50) => {
   const [current, setCurrent] = useState<DrawingLine[]>(initialState);
   const [undoStack, setUndoStack] = useState<DrawingLine[][]>([]);
   const [redoStack, setRedoStack] = useState<DrawingLine[][]>([]);
