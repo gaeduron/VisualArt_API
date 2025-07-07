@@ -75,9 +75,8 @@ const Canvas = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex flex-col items-start gap-2">
 
-        <div className="relative">
           <DrawingCanvas
             ref={canvasRef}
             config={canvasConfig}
@@ -87,8 +86,8 @@ const Canvas = () => {
           />
           
           {/* Floating toolbar positioned at bottom left */}
-          <div className="flex gap-6 py-4">
-            <div className="bg-white rounded-lg shadow-lg border p-3">
+          <div className="flex gap-6">
+            <div className="bg-white rounded-lg shadow-lg p-3">
               <div className="flex gap-2">
                 <ToolSelector
                   currentTool={currentTool}
@@ -120,7 +119,6 @@ const Canvas = () => {
               </div>
             </div>
           </div>
-      </div>
     </div>
   );
 };

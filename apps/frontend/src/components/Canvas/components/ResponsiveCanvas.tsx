@@ -53,7 +53,7 @@ const ResponsiveCanvas = ({
   logicalWidth, 
   logicalHeight, 
   children, 
-  className = "border border-gray-400 rounded-lg overflow-hidden shadow-sm w-full"
+  className = "border-3 border-gray-300 rounded-lg overflow-hidden shadow-sm w-full"
 }: ResponsiveCanvasProps) => {
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
