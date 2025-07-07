@@ -29,6 +29,7 @@ export interface ShortcutRegistry {
   unregister: (component: ComponentName) => void;
   getAction: (component: ComponentName, actionName: ActionName) => ShortcutAction | undefined;
   getAllActions: () => Record<ComponentName, ComponentActions>;
+  subscribe: (listener: () => void) => () => void;
 }
 
 export interface GlobalShortcutConfig {

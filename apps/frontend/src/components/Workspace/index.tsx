@@ -17,7 +17,7 @@ const Workspace = () => {
   const { imageUrl, isLoading, error } = useReferenceImage(DEFAULT_REFERENCE);
 
   return (
-    <div className="p-8 rounded-lg bg-gray-200 flex flex-col items-center justify-center gap-6 md:flex-row md:items-start">
+    <div className="min-h-screen p-8 rounded-lg bg-gray-200 flex items-center justify-center gap-6 md:flex-row md:items-start">
       <ReferenceImage imageUrl={imageUrl} isLoading={isLoading} error={error} />
       <Canvas />
     </div>

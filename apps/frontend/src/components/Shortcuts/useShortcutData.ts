@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { shortcutRegistry } from '../../lib/shortcuts/registry';
 import { globalShortcuts } from '../../app/shortcuts.config';
 
@@ -18,8 +19,10 @@ interface ShortcutData {
  * GHOST STATE: Current registry state, component registrations
  */
 export const useShortcutData = (): ShortcutData[] => {
-  const getShortcutList = (): ShortcutData[] => {
-    const shortcuts: ShortcutData[] = [];
+  const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
+
+  const updateShortcuts = () => {
+    const newShortcuts: ShortcutData[] = [];
     const allActions = shortcutRegistry.getAllActions();
     
     Object.entries(globalShortcuts).forEach(([keyCombo, config]) => {
@@ -27,15 +30,22 @@ export const useShortcutData = (): ShortcutData[] => {
       const action = componentActions?.[config.action];
       
       if (action) {
-        shortcuts.push({
+        newShortcuts.push({
           key: keyCombo,
           description: action.description
         });
       }
     });
     
-    return shortcuts;
+    setShortcuts(newShortcuts);
   };
 
-  return getShortcutList();
+  useEffect(() => {
+    updateShortcuts();
+    const unsubscribe = shortcutRegistry.subscribe(updateShortcuts);
+    
+    return unsubscribe;
+  }, []);
+
+  return shortcuts;
 }; 

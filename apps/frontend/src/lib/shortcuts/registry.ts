@@ -14,13 +14,16 @@ import { ComponentActions, ShortcutRegistry, ShortcutAction, ComponentName, Acti
 
 class ShortcutRegistryImpl implements ShortcutRegistry {
   private registry: Registry = {};
+  private listeners: (() => void)[] = [];
 
   register(component: ComponentName, actions: ComponentActions): void {
     this.registry[component] = actions;
+    this.notifyListeners();
   }
 
   unregister(component: ComponentName): void {
     delete this.registry[component];
+    this.notifyListeners();
   }
 
   getAction(component: ComponentName, actionName: ActionName): ShortcutAction | undefined {
@@ -30,6 +33,17 @@ class ShortcutRegistryImpl implements ShortcutRegistry {
 
   getAllActions(): Registry {
     return { ...this.registry };
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach(listener => listener());
   }
 }
 
