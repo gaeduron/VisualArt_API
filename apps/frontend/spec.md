@@ -82,11 +82,10 @@ interface ReferenceImageProps {
 - Update canvas actions hook (30-50 lines)
 
 **Features**:
-- "Evaluate" button in toolbar (matches existing button style)
-- Tab shortcut for evaluation
-- Confirmation modal for destructive action (clears canvas)
-- Disabled state when canvas is empty
-- Visual feedback during evaluation
+- "Evaluate" button in toolbar before export button (matches existing button style)
+- Tab shortcut for evaluation (tab key)
+- Does not clear the canvas or trigger any other action other than starting the evaluation process 
+- The evaluation will be triggered with a useEvaluation hook that will just make an alert for now
 
 **Integration**:
 - Add to existing toolbar with separator

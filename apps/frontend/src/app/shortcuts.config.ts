@@ -38,6 +38,10 @@ export const globalShortcuts: GlobalShortcutConfig = {
     component: 'canvas',
     action: 'clear'
   },
+  'tab': {
+    component: 'canvas',
+    action: 'evaluate'
+  },
 
   // Future: App-level shortcuts
   // 'cmd+s': {

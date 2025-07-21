@@ -7,6 +7,7 @@ interface UseCanvasActionsProps {
   redo: () => void;
   clearCanvas: () => void;
   setCurrentTool: (tool: DrawingTool) => void;
+  evaluate: () => void;
 }
 
 /**
@@ -24,7 +25,8 @@ export const useCanvasActions = ({
   undo,
   redo,
   clearCanvas,
-  setCurrentTool
+  setCurrentTool,
+  evaluate
 }: UseCanvasActionsProps): ComponentActions => {
   return useMemo(() => ({
     undo: {
@@ -46,6 +48,10 @@ export const useCanvasActions = ({
     setEraserTool: {
       fn: () => setCurrentTool('eraser'),
       description: 'Switch to eraser tool'
+    },
+    evaluate: {
+      fn: evaluate,
+      description: 'Evaluate drawing against reference'
     }
-  }), [undo, redo, clearCanvas, setCurrentTool]);
+  }), [undo, redo, clearCanvas, setCurrentTool, evaluate]);
 }; 

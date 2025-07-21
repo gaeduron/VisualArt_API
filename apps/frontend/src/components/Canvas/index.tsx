@@ -6,11 +6,13 @@ import UndoRedoControls from './components/UndoRedoControls';
 import ToolSelector from './components/ToolSelector';
 import ClearCanvasButton from './components/ClearCanvasButton';
 import ExportButton from './components/ExportButton';
+import EvaluateButton from './components/EvaluateButton';
 import { CanvasConfig, ToolSettings, DrawingTool } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useCanvasActions } from './hooks/useCanvasActions';
 import { useShortcutRegistry } from '../../lib/shortcuts/useShortcutRegistry';
 import { useCanvasExport } from './hooks/useCanvasExport';
+import { useEvaluation } from './hooks/useEvaluation';
 
 /**
  * INTENTION: Orchestrate canvas system, manage drawing state and tool settings
@@ -51,6 +53,8 @@ const Canvas = () => {
 
   const { current: lines, pushToHistory, undo, redo, canUndo, canRedo } = useUndoRedo([]);
   
+  const { evaluate } = useEvaluation();
+
   const clearCanvas = () => {
     pushToHistory([]);
   };
@@ -59,7 +63,8 @@ const Canvas = () => {
     undo,
     redo,
     clearCanvas,
-    setCurrentTool
+    setCurrentTool,
+    evaluate
   });
 
   useShortcutRegistry('canvas', canvasActions);
@@ -104,16 +109,21 @@ const Canvas = () => {
                   />
                 
                 <div className="w-px bg-gray-200 mx-1"></div>
-
-                <ClearCanvasButton
-                  onClear={clearCanvas}
+                
+                <EvaluateButton
+                  onEvaluate={evaluate}
+                  disabled={lines.length === 0}
+                />
+                
+                <ExportButton
+                  onExport={handleExport}
                   disabled={lines.length === 0}
                 />
                 
                 <div className="w-px bg-gray-200 mx-1"></div>
-                
-                <ExportButton
-                  onExport={handleExport}
+
+                <ClearCanvasButton
+                  onClear={clearCanvas}
                   disabled={lines.length === 0}
                 />
               </div>
