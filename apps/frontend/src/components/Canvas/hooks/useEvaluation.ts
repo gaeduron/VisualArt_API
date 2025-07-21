@@ -1,20 +1,46 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+
+export interface EvaluationResult {
+  top_5_error_rate: number; // percentage 0-100
+  numberOfPixels: number;
+  comparisonImage: string; // base64 or URL
+}
 
 /**
- * INTENTION: Trigger drawing evaluation process
- * REQUIRES: Canvas state (implicit via integration)
- * MODIFIES: None (placeholder alert only)
- * EFFECTS: Displays alert as mock evaluation
- * RETURNS: Evaluation trigger function
+ * INTENTION: Provide pure evaluation function and store evaluation history
+ * REQUIRES: Reference image URL and user drawing data URL as parameters
+ * MODIFIES: Internal evaluation store state
+ * EFFECTS: Returns mock evaluation results and manages evaluation history
+ * RETURNS: Evaluation function, history store, and store management functions
  *
- * ASSUMPTIONS: Will be replaced with real evaluation logic
- * INVARIANTS: Always callable, but may be no-op if disabled
- * GHOST STATE: Future evaluation results
+ * ASSUMPTIONS: Mock data for development, will be replaced with real evaluation
+ * INVARIANTS: Always returns consistent mock structure, store maintains chronological order
+ * GHOST STATE: Future evaluation API integration
  */
 export const useEvaluation = () => {
-  const evaluate = useCallback(() => {
-    alert('Evaluating drawing...');
+  const [evaluationStore, setEvaluationStore] = useState<EvaluationResult[]>([]);
+
+  const evaluate = (referenceImageUrl?: string, userDrawingDataUrl?: string): EvaluationResult => {
+    // Mock evaluation logic
+    console.log('Evaluating against reference:', referenceImageUrl);
+    console.log('User drawing data URL length:', userDrawingDataUrl?.length || 0);
+
+    const mockResult: EvaluationResult = {
+      top_5_error_rate: Math.random() * 10 + 5, // 5-15%
+      numberOfPixels: Math.floor(Math.random() * 30000) + 50000,
+      comparisonImage: '/evaluated_image_exemple.png'
+    };
+
+    return mockResult;
+  };
+
+  const pushToEvaluationStore = useCallback((result: EvaluationResult) => {
+    setEvaluationStore(prev => [...prev, result]);
   }, []);
 
-  return { evaluate };
+  return { 
+    evaluate, 
+    evaluationStore, 
+    pushToEvaluationStore 
+  };
 }; 

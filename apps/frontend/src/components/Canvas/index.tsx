@@ -12,7 +12,6 @@ import { useUndoRedo } from './hooks/useUndoRedo';
 import { useCanvasActions } from './hooks/useCanvasActions';
 import { useShortcutRegistry } from '../../lib/shortcuts/useShortcutRegistry';
 import { useCanvasExport } from './hooks/useCanvasExport';
-import { useEvaluation } from './hooks/useEvaluation';
 
 /**
  * INTENTION: Orchestrate canvas system, manage drawing state and tool settings
@@ -25,7 +24,11 @@ import { useEvaluation } from './hooks/useEvaluation';
  * INVARIANTS: Canvas config remains constant during session
  * GHOST STATE: Future tool state (color palette, eraser, etc.)
  */
-const Canvas = () => {
+interface CanvasProps {
+  onEvaluate: (userDrawingDataUrl: string) => void;
+}
+
+const Canvas = ({ onEvaluate }: CanvasProps) => {
   const canvasRef = useRef<DrawingCanvasRef>(null);
   const canvasConfig: CanvasConfig = {
     width: 1000,
@@ -53,7 +56,19 @@ const Canvas = () => {
 
   const { current: lines, pushToHistory, undo, redo, canUndo, canRedo } = useUndoRedo([]);
   
-  const { evaluate } = useEvaluation();
+  const stageRef = canvasRef.current?.getStageRef() || { current: null };
+  const { exportAsPNG, downloadPNG } = useCanvasExport({ 
+    stageRef, 
+    canvasName: 'drawing' 
+  });
+
+  const handleEvaluate = async () => {
+    console.log('handleEvaluate');
+    const userDrawingDataUrl = await exportAsPNG({ backgroundColor: 'white' });
+    if (userDrawingDataUrl) {
+      onEvaluate(userDrawingDataUrl);
+    }
+  };
 
   const clearCanvas = () => {
     pushToHistory([]);
@@ -64,16 +79,10 @@ const Canvas = () => {
     redo,
     clearCanvas,
     setCurrentTool,
-    evaluate
+    evaluate: handleEvaluate
   });
 
   useShortcutRegistry('canvas', canvasActions);
-
-  const stageRef = canvasRef.current?.getStageRef() || { current: null };
-  const { downloadPNG } = useCanvasExport({ 
-    stageRef, 
-    canvasName: 'drawing' 
-  });
 
   const handleExport = async () => {
     await downloadPNG({ backgroundColor: 'white' });
@@ -111,7 +120,7 @@ const Canvas = () => {
                 <div className="w-px bg-gray-200 mx-1"></div>
                 
                 <EvaluateButton
-                  onEvaluate={evaluate}
+                  onEvaluate={handleEvaluate}
                   disabled={lines.length === 0}
                 />
                 
