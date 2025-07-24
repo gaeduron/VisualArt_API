@@ -11,7 +11,7 @@ Observation is needed to use characters sheets or use production document effect
 
 ![shortcut](./public/shortcut.png)
 
-## LICENCE
+## LICENCE - READ ONLY REPO
 
 This code is shared **strictly for viewing purposes**.  
 You may read the code for evaluation, educational, or demonstration purposes only.
