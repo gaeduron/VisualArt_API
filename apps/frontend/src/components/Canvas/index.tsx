@@ -63,7 +63,6 @@ const Canvas = ({ onEvaluate }: CanvasProps) => {
   });
 
   const handleEvaluate = async () => {
-    console.log('handleEvaluate');
     const userDrawingDataUrl = await exportAsPNG({ backgroundColor: 'white' });
     if (userDrawingDataUrl) {
       onEvaluate(userDrawingDataUrl);
