@@ -11,6 +11,18 @@ Observation is needed to use characters sheets or use production document effect
 
 ![shortcut](./public/shortcut.png)
 
+## LICENCE
+
+This code is shared **strictly for viewing purposes**.  
+You may read the code for evaluation, educational, or demonstration purposes only.
+
+You are **not permitted** to:
+- Copy or reuse this code in any form
+- Run it on any server or personal machine
+- Distribute, modify, or derive new works from it
+
+For collaboration or usage requests, contact: gaetan.duron@gmail.com
+
 ## Features
 - Canvas: Drawing interface
 - Reference image
