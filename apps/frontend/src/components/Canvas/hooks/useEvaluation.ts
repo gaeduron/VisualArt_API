@@ -6,6 +6,7 @@ export interface EvaluationResult {
   comparisonImage: string; // base64 or URL
   referenceImageUrl: string;
   userDrawingDataUrl: string;
+  createdAt: number; // unix timestamp in milliseconds
 }
 
 /**
@@ -32,11 +33,12 @@ export const useEvaluation = () => {
     }
 
     const mockResult: EvaluationResult = {
-      top_5_error_rate: Math.random() * 10 + 5, // 5-15%
+      top_5_error_rate: Math.random() * 12, // 0-12%
       numberOfPixels: Math.floor(Math.random() * 30000) + 50000,
       comparisonImage: '/evaluated_image_exemple.png',
       referenceImageUrl,
-      userDrawingDataUrl
+      userDrawingDataUrl,
+      createdAt: Date.now(),
     };
 
     return mockResult;

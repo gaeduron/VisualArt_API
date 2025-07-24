@@ -94,53 +94,28 @@ interface ReferenceImageProps {
 
 ---
 
-### Step 3: Evaluation API Integration (1 hour)
-**Goal**: Create evaluation service and data flow
+### Step 3: mocked evaluation
+I want the mock evaluation to return an object that contains the following fields:
+- top_5_error_rate: number (from 0 to 20 usualy but can go up to 100, it's a percentage)
+- numberOfPixels: number
+- comparisonImage: string (base64 encoded image, or a url)
 
-**Files to Create**:
-- `services/evaluationApi.ts` (80-120 lines)
-- `hooks/useEvaluation.ts` (100-150 lines)
-- `types/evaluation.ts` (40-60 lines)
-
-**Features**:
-- API service for sending reference + user drawing
-- Loading states and error handling
-- Retry logic for failed evaluations
-- TypeScript interfaces for evaluation data
-
-**API Structure**:
-```typescript
-interface EvaluationRequest {
-  referenceImage: string; // base64 data URL
-  userDrawing: string;    // base64 data URL
-  timestamp: number;
-}
-
-interface EvaluationResult {
-  id: string;
-  accuracy: number;
-  feedback: string;
-  comparisonImage: string;
-  metrics: EvaluationMetrics;
-}
-```
+the comparisonImage should be the `/public/evaluated_image_exemple.png` at the root of the project.
 
 ---
 
-### Step 4: History Stack Component (1 hour)
-**Goal**: Display evaluation results in a vertical stack with loading states
+### Step 4: Evaluation History Component (1 hour)
+**Goal**: Display evaluation results in a vertical stack
 
 **Components to Create**:
-- `HistoryStack.tsx` (100-150 lines)
-- `HistoryItem.tsx` (80-120 lines)
-- `useHistoryStack.ts` (60-80 lines)
+Use components from the `EvaluationHistory` folder.
 
 **Features**:
-- Vertical stack on right side of screen
-- Loading overlay for processing items
-- Thumbnail view of results
-- Click to expand functionality
-- Auto-scroll to latest item
+- Vertical stack on the right side of screen
+- Open by default
+- Closeable side sheet
+- Thumbnail view of results (with the comparisonImage + top_5_error_rate on top)
+- scrollable history stack, new items should be added at the top
 
 **States**:
 - Loading: Shows user drawing with spinner overlay
@@ -193,6 +168,37 @@ interface EvaluationResult {
 - Mobile: Full-width with tab navigation
 
 ---
+
+### Step 7: Evaluation API Integration (1 hour)
+**Goal**: Create evaluation service and data flow
+
+**Files to Create**:
+- `services/evaluationApi.ts` (80-120 lines)
+- `hooks/useEvaluation.ts` (100-150 lines)
+- `types/evaluation.ts` (40-60 lines)
+
+**Features**:
+- API service for sending reference + user drawing
+- Loading states and error handling
+- Retry logic for failed evaluations
+- TypeScript interfaces for evaluation data
+
+**API Structure**:
+```typescript
+interface EvaluationRequest {
+  referenceImage: string; // base64 data URL
+  userDrawing: string;    // base64 data URL
+  timestamp: number;
+}
+
+interface EvaluationResult {
+  id: string;
+  accuracy: number;
+  feedback: string;
+  comparisonImage: string;
+  metrics: EvaluationMetrics;
+}
+```
 
 ## Technical Considerations
 
