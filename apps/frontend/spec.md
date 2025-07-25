@@ -124,26 +124,20 @@ Use components from the `EvaluationHistory` folder.
 
 ---
 
-### Step 5: Side Sheet Result Details (1 hour)
+### Step 5: Evaluation Details (1 hour)
 **Goal**: Detailed view of evaluation results with statistics
 
 **Components to Create**:
-- `ResultSideSheet.tsx` (120-180 lines)
-- `EvaluationStats.tsx` (80-120 lines)
-- `ComparisonView.tsx` (60-100 lines)
+- `EvaluationDetails.tsx`
 
 **Features**:
-- Slide-out panel from right side
-- Large comparison image view
-- Detailed statistics and metrics
-- Close/escape functionality
-- Responsive design for mobile
-
-**Statistics Display**:
-- Overall accuracy percentage
-- Line accuracy breakdown
-- Timing metrics
-- Improvement suggestions
+- dialog open when you click on a result thumbnail
+- show the comparisonImage
+- show the top_5_error_rate
+- show the numberOfPixels
+- show the createdAt date
+- show the referenceImage
+- show the userDrawing
 
 ---
 
