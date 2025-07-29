@@ -6,6 +6,7 @@ import { CanvasConfig, ToolSettings, DrawingLine } from '../types';
 import { CanvasScalingAPI } from '../components/ResponsiveCanvas';
 import { isPointWithinBounds, applyRealTimeSmoothing, createNewLine } from '../utils/drawingHelpers';
 import { isMousePressed, getCanvasPoint } from '../utils/canvasGeometry';
+import { compute_drawing_speed } from 'fast-utils';
 
 interface UseDrawingEventsProps {
   config: CanvasConfig;
@@ -82,6 +83,13 @@ export const useDrawingEvents = ({
     };
 
     const finishDrawing = () => {
+      // TODO: REMOVE THIS WHEN ACTUAL EVALUATION IS IMPLEMENTED
+      // Log drawing speed
+      console.time("speed compute")
+      const speed = compute_drawing_speed(1000, BigInt(0), BigInt((Math.random() * 1000).toFixed(0)));
+      console.timeEnd("speed compute")
+      console.log("drawing speed: ",speed)
+
       if (isDrawing.current && currentLines.length > 0) {
         pushToHistory(currentLines);
       }

@@ -1,12 +1,15 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "pipeline": {
+    "fast-utils": {
+      "outputs": ["packages/fast_utils/pkg/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "fast-utils"],
       "outputs": ["dist/**", ".next/**"]
     },
     "lint": {},
