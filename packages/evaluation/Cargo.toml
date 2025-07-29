@@ -15,9 +15,9 @@ serde_json = "1.0"
 thiserror = "1.0"
 
 [[example]]
-name = "streaming_demo"
-path = "examples/streaming_demo.rs"
+name = "basic_usage"
+path = "examples/basic_usage.rs"
 
-[[bin]]
-name = "evaluate"
-path = "src/main.rs" 
+# [[bin]]
+# name = "evaluate"
+# path = "src/main.rs" 
