@@ -5,7 +5,13 @@
 
 mod internal;
 
-/// Tracks drawing observation time
+#[cfg(test)]
+mod tests;
+
+// Re-export types for convenience
+pub use crate::image::Image;
+
+/// Tracks drawing observation
 /// 
 pub struct Observation {
     // Private implementation - external code cannot access this
@@ -14,9 +20,9 @@ pub struct Observation {
 
 impl Observation {
     /// Creates a new observation starting now.
-    pub fn new() -> Self {
+    pub fn new(reference_image: Image) -> Self {
         Self {
-            inner: crate::observation::internal::ObservationImpl::new(),
+            inner: crate::observation::internal::ObservationImpl::new(reference_image),
         }
     }
 
@@ -43,5 +49,17 @@ impl Observation {
     /// Returns the observation end time in milliseconds.
     pub fn get_end_time(&self) -> Option<u64> {
         self.inner.get_end_time()
+    }
+
+    /// Returns the total number of pixels in the reference image.
+    pub fn get_total_non_white_pixels(&self) -> u32 {
+        self.inner.get_total_non_white_pixels()
+    }
+
+    /// Returns the drawing speed in pixels per second.
+    /// 
+    /// Returns 0 if the observation hasn't finished yet.
+    pub fn get_drawing_speed(&self) -> f32 {
+        self.inner.get_drawing_speed()
     }
 } 
