@@ -14,7 +14,7 @@ impl ObservationImpl {
         }
     }
 
-    pub fn get_observation_duration(&self) -> u64 {
+    pub fn get_duration(&self) -> u64 {
         let end_time = self.end_time.unwrap_or_else(current_time_ms);
         end_time - self.start_time
     }
@@ -27,5 +27,9 @@ impl ObservationImpl {
 
     pub fn get_start_time(&self) -> u64 {
         self.start_time
+    }
+
+    pub fn get_end_time(&self) -> Option<u64> {
+        self.end_time
     }
 } 

@@ -24,8 +24,8 @@ impl Observation {
     /// 
     /// If the observation is still active, returns the current duration.
     /// If finished, returns the final duration.
-    pub fn get_observation_duration(&self) -> u64 {
-        self.inner.get_observation_duration()
+    pub fn get_duration(&self) -> u64 {
+        self.inner.get_duration()
     }
 
     /// Finishes the observation and records the end time.
@@ -38,5 +38,10 @@ impl Observation {
     /// Returns the observation start time in milliseconds.
     pub fn get_start_time(&self) -> u64 {
         self.inner.get_start_time()
+    }
+
+    /// Returns the observation end time in milliseconds.
+    pub fn get_end_time(&self) -> Option<u64> {
+        self.inner.get_end_time()
     }
 } 

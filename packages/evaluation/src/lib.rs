@@ -12,7 +12,7 @@ mod tests {
     fn test_observation_creation() {
         let obs = Observation::new();
         std::thread::sleep(std::time::Duration::from_millis(6));
-        assert!(obs.get_observation_duration() > 5);
+        assert!(obs.get_duration() > 5);
     }
 
     #[test]
@@ -20,6 +20,6 @@ mod tests {
         let mut obs = Observation::new();
         std::thread::sleep(std::time::Duration::from_millis(10));
         obs.finish_observation();
-        assert!(obs.get_observation_duration() > 9);
+        assert!(obs.get_duration() > 9);
     }
 }

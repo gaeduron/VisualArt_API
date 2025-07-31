@@ -91,7 +91,9 @@ config is an object that contains the following properties:
 
 it has mutiple methods.
 Time tracking:
-- getObservationDuration() -> number // in milliseconds
+- get_duration() -> number // in milliseconds
+- get_start_time() -> number // in milliseconds
+- get_end_time() -> number // in milliseconds
 
 Life cycle:
 - startObservation() -> void // start recording the time
@@ -186,5 +188,28 @@ We are going to only do a subset of the features. (just the time stuff for now)
 
 The goal is to be able to test it in the console for now.
 
+## 2. Initialise the observation object with the reference image
+This is done with TDD.
+we are going to simply load the image and add the statistics method to the observation object.
+This way we can get the number of pixels, duration and drawing speed.
+
+## 4. Wire-up the observation object in the frontend
+We are going to start wiring the observation object in the frontend.
+
+We want to start an observation when the reference image is loaded.
+we stop the observation when the user trigger an evaluation with TAB.
+We are going to need to manage this observation object in the state.
+
+UI:
+- a button to finish the observation of the reference image
+- on the reference image we display the duration of the observation
+
+
+
+## 5. Heatmap module
+we create the heatmap module with it's structure and the methods to compute the heatmap.
+
+## 6. Error grid module
+we create the error grid module with it's structure and the methods to compute the error grid.
 
 
