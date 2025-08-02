@@ -7,6 +7,7 @@ pub type RGBA = [u8; 4]; // [R, G, B, A]
 pub type ImageDimensions = (usize, usize); // (width, height)
 
 /// Type alias for pixel coordinates
+/// (x: usize, y: usize)
 pub type PixelCoord = (usize, usize); // (x, y)
 
 /// Type alias for 2D image array (height x width x RGBA channels)
@@ -15,4 +16,12 @@ pub type PixelCoord = (usize, usize); // (x, y)
 /// - First dimension: height (rows)
 /// - Second dimension: width (columns) 
 /// - Each pixel is an RGBA tuple [R, G, B, A]
-pub type Image2DArray = Vec<Vec<RGBA>>; 
+pub type Image2DArray = Vec<Vec<RGBA>>;
+
+/// Type alias for heatmap matrix
+/// 
+/// This represents a heatmap as a 2D vector of i16 values:
+/// - First dimension: height (rows)
+/// - Second dimension: width (columns) 
+/// - Each value is an i16 value representing the distance from the nearest position of value 0. 
+pub type HeatmapMatrix = Vec<Vec<i16>>;
