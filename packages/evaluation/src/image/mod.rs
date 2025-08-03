@@ -23,6 +23,28 @@ impl Image {
         }
     }
 
+    /// Load an image from a file path
+    /// 
+    /// Supports common image formats (PNG, JPEG, etc.) via the image crate.
+    /// Converts the image to RGBA format for consistent processing.
+    pub fn load_from_file(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        use image::io::Reader as ImageReader;
+
+        let img = ImageReader::open(path)?.decode()?;
+        let rgba_img = img.to_rgba8();
+        let (width, height) = rgba_img.dimensions();
+        let mut pixels = vec![vec![[0u8; 4]; width as usize]; height as usize];
+        
+        for y in 0..height {
+            for x in 0..width {
+                let pixel = rgba_img.get_pixel(x, y);
+                pixels[y as usize][x as usize] = [pixel[0], pixel[1], pixel[2], pixel[3]];
+            }
+        }
+        
+        Ok(Self::new(pixels))
+    }
+
     /// Factory method for creating a standard white image
     /// 
     /// default size is 500x500

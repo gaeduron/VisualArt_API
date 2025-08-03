@@ -29,10 +29,10 @@ pub fn flood_fill(matrix: &mut HeatmapMatrix, zero_points: &[PixelCoord]) {
         let current_distance = matrix[y][x];
         
         // Check all 4 neighbors (Manhattan distance)
-        Self::process_neighbor(matrix, &mut queue, x, y, 0, -1, current_distance, width, height); // Up
-        Self::process_neighbor(matrix, &mut queue, x, y, 0, 1, current_distance, width, height);  // Down
-        Self::process_neighbor(matrix, &mut queue, x, y, -1, 0, current_distance, width, height); // Left
-        Self::process_neighbor(matrix, &mut queue, x, y, 1, 0, current_distance, width, height);  // Right
+        process_neighbor(matrix, &mut queue, x, y, 0, -1, current_distance, width, height); // Up
+        process_neighbor(matrix, &mut queue, x, y, 0, 1, current_distance, width, height);  // Down
+        process_neighbor(matrix, &mut queue, x, y, -1, 0, current_distance, width, height); // Left
+        process_neighbor(matrix, &mut queue, x, y, 1, 0, current_distance, width, height);  // Right
     }
 }
 
@@ -59,7 +59,7 @@ fn process_neighbor(
     let nx = x as i32 + dx;
     let ny = y as i32 + dy;
     
-    if Self::is_valid_position(nx, ny, width, height) {
+    if is_valid_position(nx, ny, width, height) {
         let nx = nx as usize;
         let ny = ny as usize;
         

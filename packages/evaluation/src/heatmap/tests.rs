@@ -1,6 +1,8 @@
 use super::*;
 use crate::image::Image;
 
+const ALGORITHM: &str = "flood_fill";
+
 #[test]
 fn test_manhattan_distance_flood_fill_with_multiple_targets() {
     let mut test_image = Image::standard_white(Some((5, 5)));
@@ -9,7 +11,7 @@ fn test_manhattan_distance_flood_fill_with_multiple_targets() {
     test_image.set_pixel(3, 3, [0, 0, 0, 255]);
     
     // Create heatmap from the test image
-    let heatmap = Heatmap::new(test_image, [0, 0, 0, 255]);
+    let heatmap = Heatmap::new(test_image, [0, 0, 0, 255], ALGORITHM);
     // Heatmap:
     // 2 1 2 3 4
     // 1 0 1 2 3
@@ -65,7 +67,7 @@ fn test_single_target_flood_fill() {
     let mut test_image = Image::standard_white(Some((3, 3)));
     test_image.set_pixel(1, 1, [255, 0, 0, 255]); // Red target at center (1,1)
     
-    let heatmap = Heatmap::new(test_image, [255, 0, 0, 255]);
+    let heatmap = Heatmap::new(test_image, [255, 0, 0, 255], ALGORITHM);
     
     // Expected distances from center (1,1):
     // (0,0)=2, (0,1)=1, (0,2)=2
@@ -89,7 +91,7 @@ fn test_edge_target_flood_fill() {
     let mut test_image = Image::standard_white(Some((4, 4)));
     test_image.set_pixel(0, 0, [0, 255, 0, 255]); // Green target at corner (0,0)
     
-    let heatmap = Heatmap::new(test_image, [0, 255, 0, 255]);
+    let heatmap = Heatmap::new(test_image, [0, 255, 0, 255], ALGORITHM);
     // Heatmap:
     // 0 1 2 3
     // 1 2 3 4

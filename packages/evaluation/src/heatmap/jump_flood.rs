@@ -6,6 +6,40 @@
 //! Reference: https://www.comp.nus.edu.sg/~tants/jfa.html (2006)
 
 use crate::types::{HeatmapMatrix, PixelCoord};
+use rayon::prelude::*;
+
+/// Configuration options for Jump Flooding Algorithm
+pub struct JfaOptions {
+    pub parallel: bool,
+    pub seed_map: Option<SeedMap>,
+}
+
+impl JfaOptions {
+    pub fn new() -> Self {
+        Self {
+            parallel: true,
+            seed_map: None,
+        }
+    }
+    
+    pub fn with_seed_map(seed_map: SeedMap) -> Self {
+        Self {
+            parallel: true,
+            seed_map: Some(seed_map),
+        }
+    }
+    
+    pub fn parallel(mut self, parallel: bool) -> Self {
+        self.parallel = parallel;
+        self
+    }
+}
+
+impl Default for JfaOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 /// Seed map: each pixel stores coordinates of its nearest target (or None if unknown)
 /// example:
@@ -14,30 +48,49 @@ use crate::types::{HeatmapMatrix, PixelCoord};
 ///     [None, (1, 1), None],
 ///     [None, None, (2, 2)],
 /// ]
-type SeedMap = Vec<Vec<Option<PixelCoord>>>;
+pub type SeedMap = Vec<Vec<Option<PixelCoord>>>;
 
-/// Main entry point for Jump Flooding Algorithm with JFA+1 variant
+/// Unified Jump Flooding Algorithm with configurable options
 /// 
-/// PSEUDO-CODE:
-/// 2. For step sizes [N/2, N/4, N/8, ..., 1, 1]:  // JFA+1 has extra pass with step=1
-///    a. For each pixel (x,y):
-///       b. Check 8 neighbors at step_size distance
-///       c. Update to nearest target if closer found
-/// 3. Convert seed coordinates to Manhattan distances
+/// # Examples
+/// ```
+/// // Default: parallel processing, initialize from target points
+/// // JfaOptions::new()
+/// 
+/// // Sequential processing
+/// // JfaOptions::new().parallel(false)
+/// 
+/// // Use pre-built seed map
+/// // JfaOptions::with_seed_map(seed_map)
+/// ```
 pub fn jump_flooding_algorithm(
     width: usize,
     height: usize,
     target_points: &[PixelCoord],
+    options: JfaOptions,
 ) -> HeatmapMatrix {
-    let mut seed_map = initialize_seed_map(width, height, target_points);
+    // Step 1: Get or create seed map
+    let mut seed_map = match options.seed_map {
+        Some(seed_map) => seed_map,
+        None => initialize_seed_map(width, height, target_points),
+    };
     
+    // Step 2: Run JFA passes
     let step_sizes = calculate_step_sizes(width, height);
     for step_size in step_sizes {
-        jump_flooding_pass(&mut seed_map, step_size, width, height);
+        if options.parallel {
+            jump_flooding_pass_parallel(&mut seed_map, step_size, width, height);
+        } else {
+            jump_flooding_pass(&mut seed_map, step_size, width, height);
+        }
     }
     
     // Step 3: Convert seeds to distances
-    convert_seeds_to_distances(&seed_map, width, height)
+    if options.parallel {
+        convert_seeds_to_distances_parallel(&seed_map, width, height)
+    } else {
+        convert_seeds_to_distances(&seed_map, width, height)
+    }
 }
 
 /// Initialize seed map with target pixel coordinates.
@@ -124,7 +177,7 @@ fn is_within_bounds(x: isize, y: isize, width: usize, height: usize) -> bool {
     x >= 0 && y >= 0 && (x as usize) < width && (y as usize) < height
 }
 
-/// Perform one pass of jump flooding with given step size
+/// Perform one pass of jump flooding with given step size (sequential)
 fn jump_flooding_pass(
     seed_map: &mut SeedMap,
     step_size: usize,
@@ -135,45 +188,97 @@ fn jump_flooding_pass(
     
     for current_pixel_y in 0..height {
         for current_pixel_x in 0..width {
-            let current_pixel_position = (current_pixel_x, current_pixel_y);
-            let mut best_seed_found = original_seed_map[current_pixel_y][current_pixel_x];
-            let mut shortest_distance_found = match best_seed_found {
-                Some(seed_coordinates) => manhattan_distance(current_pixel_position, seed_coordinates),
-                None => usize::MAX,
-            };
-            
-            // Directions: up, down, left, right, and 4 diagonals
-            let eight_direction_offsets = [
-                (-1, -1), (-1, 0), (-1, 1),  // top row
-                ( 0, -1),          ( 0, 1),  // middle row (skip center)
-                ( 1, -1), ( 1, 0), ( 1, 1),  // bottom row
-            ];
-            
-            for (direction_x, direction_y) in eight_direction_offsets {
-                let neighbor_x = current_pixel_x as isize + (direction_x * step_size as isize);
-                let neighbor_y = current_pixel_y as isize + (direction_y * step_size as isize);
-                
-                if is_within_bounds(neighbor_x, neighbor_y, width, height) {
-                    let neighbor_x_usize = neighbor_x as usize;
-                    let neighbor_y_usize = neighbor_y as usize;
-                    
-                    if let Some(neighbor_seed_coordinates) = original_seed_map[neighbor_y_usize][neighbor_x_usize] {
-                        let distance_to_neighbor_seed = manhattan_distance(
-                            current_pixel_position, 
-                            neighbor_seed_coordinates
-                        );
-                        
-                        if distance_to_neighbor_seed < shortest_distance_found {
-                            best_seed_found = Some(neighbor_seed_coordinates);
-                            shortest_distance_found = distance_to_neighbor_seed;
-                        }
-                    }
-                }
-            }
-            
-            seed_map[current_pixel_y][current_pixel_x] = best_seed_found;
+            process_pixel(
+                &original_seed_map,
+                &mut seed_map[current_pixel_y][current_pixel_x],
+                current_pixel_x,
+                current_pixel_y,
+                step_size,
+                width,
+                height,
+            );
         }
     }
+}
+
+/// Parallel version of jump flooding pass using rayon
+/// 
+/// Processes each row in parallel for significant speedup on multi-core systems.
+/// Each row is independent and can be computed simultaneously.
+fn jump_flooding_pass_parallel(
+    seed_map: &mut SeedMap,
+    step_size: usize,
+    width: usize,
+    height: usize,
+) {
+    let original_seed_map = seed_map.clone();
+    
+    // Process rows in parallel - each row is independent
+    seed_map.par_iter_mut().enumerate().for_each(|(current_pixel_y, row)| {
+        for current_pixel_x in 0..width {
+            process_pixel(
+                &original_seed_map,
+                &mut row[current_pixel_x],
+                current_pixel_x,
+                current_pixel_y,
+                step_size,
+                width,
+                height,
+            );
+        }
+    });
+}
+
+/// Process a single pixel during JFA pass
+/// 
+/// Extracts the common pixel processing logic to eliminate code duplication
+/// between sequential and parallel implementations.
+fn process_pixel(
+    original_seed_map: &SeedMap,
+    pixel_seed: &mut Option<PixelCoord>,
+    current_pixel_x: usize,
+    current_pixel_y: usize,
+    step_size: usize,
+    width: usize,
+    height: usize,
+) {
+    let current_pixel_position = (current_pixel_x, current_pixel_y);
+    let mut best_seed_found = original_seed_map[current_pixel_y][current_pixel_x];
+    let mut shortest_distance_found = match best_seed_found {
+        Some(seed_coordinates) => manhattan_distance(current_pixel_position, seed_coordinates),
+        None => usize::MAX,
+    };
+    
+    // Directions: up, down, left, right, and 4 diagonals
+    let eight_direction_offsets = [
+        (-1, -1), (-1, 0), (-1, 1),  // top row
+        ( 0, -1),          ( 0, 1),  // middle row (skip center)
+        ( 1, -1), ( 1, 0), ( 1, 1),  // bottom row
+    ];
+    
+    for (direction_x, direction_y) in eight_direction_offsets {
+        let neighbor_x = current_pixel_x as isize + (direction_x * step_size as isize);
+        let neighbor_y = current_pixel_y as isize + (direction_y * step_size as isize);
+        
+        if is_within_bounds(neighbor_x, neighbor_y, width, height) {
+            let neighbor_x_usize = neighbor_x as usize;
+            let neighbor_y_usize = neighbor_y as usize;
+            
+            if let Some(neighbor_seed_coordinates) = original_seed_map[neighbor_y_usize][neighbor_x_usize] {
+                let distance_to_neighbor_seed = manhattan_distance(
+                    current_pixel_position, 
+                    neighbor_seed_coordinates
+                );
+                
+                if distance_to_neighbor_seed < shortest_distance_found {
+                    best_seed_found = Some(neighbor_seed_coordinates);
+                    shortest_distance_found = distance_to_neighbor_seed;
+                }
+            }
+        }
+    }
+    
+    *pixel_seed = best_seed_found;
 }
 
 /// Calculate Manhattan distance between two points
@@ -190,7 +295,7 @@ fn manhattan_distance(point1: PixelCoord, point2: PixelCoord) -> usize {
     dx + dy
 }
 
-/// Convert seed map to distance matrix
+/// Convert seed map to distance matrix (sequential)
 /// 
 /// Transforms the seed map (pixel → nearest target coordinates) into 
 /// a distance matrix (pixel → distance to nearest target).
@@ -214,6 +319,35 @@ fn convert_seeds_to_distances(
             // If no seed found, distance remains -1 (unreachable)
         }
     }
+    
+    distance_matrix
+}
+
+/// Parallel version of convert_seeds_to_distances using rayon
+/// 
+/// Processes each row independently in parallel for better performance on multi-core systems.
+fn convert_seeds_to_distances_parallel(
+    seed_map: &SeedMap,
+    width: usize,
+    height: usize,
+) -> HeatmapMatrix {
+    let mut distance_matrix = vec![vec![-1; width]; height];
+    
+    // Process rows in parallel
+    distance_matrix
+        .par_iter_mut()
+        .enumerate()
+        .for_each(|(y, row)| {
+            for x in 0..width {
+                if let Some(target_coordinates) = seed_map[y][x] {
+                    let current_position = (x, y);
+                    let distance = manhattan_distance(current_position, target_coordinates);
+                    
+                    row[x] = distance as i16;
+                }
+                // If no seed found, distance remains -1 (unreachable)
+            }
+        });
     
     distance_matrix
 }
