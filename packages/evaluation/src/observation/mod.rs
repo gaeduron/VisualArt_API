@@ -5,6 +5,8 @@
 
 mod internal;
 
+use crate::types::EvaluationReport;
+
 #[cfg(test)]
 mod tests;
 
@@ -24,6 +26,15 @@ impl Observation {
         Self {
             inner: crate::observation::internal::ObservationImpl::new(reference_image),
         }
+    }
+
+    /// Sets the drawing image for the observation.
+    /// 
+    /// It will recompute the heatmap and statistics.
+    /// 
+    /// REQUIRES: drawing is the same dimensions as the reference image
+    pub fn set_drawing(&mut self, drawing: Image) -> Result<(), String> {
+        self.inner.set_drawing(drawing)
     }
 
     /// Returns the total observation duration in milliseconds.
@@ -61,5 +72,14 @@ impl Observation {
     /// Returns 0 if the observation hasn't finished yet.
     pub fn get_drawing_speed(&self) -> f32 {
         self.inner.get_drawing_speed()
+    }
+
+    /// Returns the score of the observation.
+    /// 
+    /// REQUIRES: drawing_image is set
+    /// 
+    /// The score is the sum of the distances between the reference and drawing heatmaps.
+    pub fn get_evaluation(&self) -> Result<EvaluationReport, String> {
+        self.inner.get_evaluation()
     }
 } 

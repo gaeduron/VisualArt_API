@@ -70,4 +70,15 @@ impl Heatmap {
             },
         }
     }
+
+    /// Get the error value for a pixel
+    /// 
+    /// REQUIRES: x and y are valid pixel coordinates
+    /// RETURNS: The error value for the pixel
+    pub fn get_error(&self, x: usize, y: usize) -> i16 {
+        if x >= self.dimensions.0 || y >= self.dimensions.1 {
+            panic!("Get error: Pixel coordinates are out of bounds: ({}, {})", x, y);
+        }
+        self.matrix[y][x]
+    }
 }
