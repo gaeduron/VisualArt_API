@@ -2,7 +2,20 @@
 
 use crate::types::{Image2DArray, ImageDimensions, RGBA};
 use std::collections::HashMap;
+use rayon::prelude::*;
+use palette::{Oklab, Srgb as SrgbColor, IntoColor};
 
+#[cfg(test)]
+mod tests;
+
+const DEFAULT_MAIN_COLORS: [RGBA; 6] = [
+    [0, 0, 0, 255], // black
+    [0, 0, 255, 255], // blue
+    [255, 0, 0, 255], // red
+    [0, 255, 0, 255], // green
+    [255, 255, 0, 255], // yellow
+    [255, 255, 255, 255], // white
+];
 /// Simple image wrapper with utility methods
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Image {
@@ -13,12 +26,26 @@ pub struct Image {
 
 impl Image {
     /// Creates a new image from existing pixel data
-    pub fn new(pixels: Image2DArray) -> Self {
+    pub fn new(
+        pixels: Image2DArray,
+        main_colors: Option<Vec<RGBA>>
+    ) -> Self {
         let dimensions = (pixels[0].len(), pixels.len());
-        let number_of_pixel_per_color = Self::get_number_of_pixel_per_color(&pixels);
+        let mut contrasted_pixels = pixels.clone();
+        let main_colors = main_colors.unwrap_or(
+            DEFAULT_MAIN_COLORS.to_vec()
+        );
+            
+        Self::mutate_color_contrast(
+            &mut contrasted_pixels,
+            &main_colors,
+            None
+        );
+        let number_of_pixel_per_color = Self::get_number_of_pixel_per_color(&contrasted_pixels);
+
         Self {
             dimensions,
-            pixels,
+            pixels: contrasted_pixels,
             number_of_pixel_per_color,
         }
     }
@@ -42,7 +69,7 @@ impl Image {
             }
         }
         
-        Ok(Self::new(pixels))
+        Ok(Self::new(pixels, None))
     }
 
     /// Factory method for creating a standard white image
@@ -52,7 +79,7 @@ impl Image {
         let (x_size, y_size) = dimensions.unwrap_or((500, 500));
         let white_pixel = [255, 255, 255, 255];
         let pixels = vec![vec![white_pixel; y_size as usize]; x_size as usize];
-        Self::new(pixels)
+        Self::new(pixels, None)
     }
 
     /// Set a pixel in the image
@@ -69,6 +96,8 @@ impl Image {
 
         let old_pixel_color = self.pixels[x][y];
         self.pixels[x][y] = pixel_color;
+
+        // update number of pixel per color
         self.number_of_pixel_per_color
             .entry(old_pixel_color)
             .and_modify(|count| *count -= 1)
@@ -87,5 +116,121 @@ impl Image {
                 *counts.entry(pixel).or_insert(0) += 1;
                 counts
             })
+    }
+
+    pub fn recompute_color_contrast(
+        &mut self,
+        main_colors: Option<Vec<RGBA>>,
+        min_color_similarity: Option<f32>
+    ) {
+        let main_colors = main_colors.unwrap_or(DEFAULT_MAIN_COLORS.to_vec());
+
+        Self::mutate_color_contrast(
+            &mut self.pixels,
+            &main_colors,
+            min_color_similarity
+        );
+
+        let number_of_pixel_per_color = Self::get_number_of_pixel_per_color(&self.pixels);
+        self.number_of_pixel_per_color = number_of_pixel_per_color;
+    }
+
+    /// Mutate image pixels to have high contrast using only main solid colors
+    /// 
+    /// Mutation is done in place using BHS color space for better color theory
+    /// 
+    /// # Arguments
+    /// 
+    /// * `pixels` - The image pixels to mutate (will be modified in place)
+    /// * `main_colors` - The main colors to map to
+    /// * `min_color_similarity` - The maximum distance threshold (pixels beyond this become white)
+    pub fn mutate_color_contrast(
+        pixels: &mut Image2DArray,
+        main_colors: &Vec<RGBA>,
+        min_color_similarity: Option<f32>,
+    ) {
+        /// Euclidean distance in OKLab
+        #[inline]
+        fn oklab_dist(a: &Oklab, b: &Oklab) -> f32 {
+            let dl = a.l - b.l;
+            let da = a.a - b.a;
+            let db = a.b - b.b;
+            (dl * dl + da * da + db * db).sqrt()
+        }
+
+        // --- 1. Prepare the target palette in OKLab
+        let palette_ok: Vec<Oklab> = main_colors
+        .iter()
+        .map(|&rgb| {
+            SrgbColor::<u8>::from((rgb[0], rgb[1], rgb[2]))
+                .into_format::<f32>()
+                .into_linear()
+                .into_color()
+        })
+        .collect();
+
+        // Threshold distance: 50 % black-white
+        let threshold: f32 = min_color_similarity.unwrap_or(0.5);
+        // Fallback color = white
+        const WHITE_RGBA: [u8; 4] = [255, 255, 255, 255];
+
+        // --- 2. Parallel traversal of lines
+        pixels.par_iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|px| {
+                // If white or transparent, keep white
+                if (px[0] == 255 && px[1] == 255 && px[2] == 255) || px[3] == 0 {
+                    return;
+                }
+
+                // Ignore l’alpha pour la distance, mais on le garde en sortie
+                let lab: Oklab = SrgbColor::<u8>::from([px[0], px[1], px[2]])
+                .into_format::<f32>()
+                .into_linear()
+                .into_color();
+            
+                // if chroma is too low, set to black
+                // We dont want grey from black to become colors because they are closer due to lightness
+                const MAX_CHROMA: f32 = 0.35;
+                let chroma = (lab.a * lab.a + lab.b * lab.b).sqrt();
+                if chroma < MAX_CHROMA*0.2 && lab.l <= 0.75 {
+                    px[0] = 0;
+                    px[1] = 0;
+                    px[2] = 0;
+                    return;
+                }
+
+                // if too light with low chroma, set to white
+                if lab.l > 0.75 && chroma < MAX_CHROMA*0.2 {
+                    px.copy_from_slice(&WHITE_RGBA);
+                    return;
+                }
+
+                // Find the closest target color
+                let mut best_idx = None;
+                let mut best_d = f32::MAX;
+
+                for (i, target) in palette_ok.iter().enumerate() {
+                    let d = oklab_dist(&lab, target);
+                    if d < best_d {
+                        best_d = d;
+                        best_idx = Some(i);
+                    }
+                }
+
+                // Apply the color if close enough, otherwise set to white
+                if let Some(i) = best_idx {
+                    if best_d <= threshold {
+                        let rgb = main_colors[i];
+                        px[0] = rgb[0];
+                        px[1] = rgb[1];
+                        px[2] = rgb[2];
+                    } else {
+                        px.copy_from_slice(&WHITE_RGBA);
+                    }
+                } else {
+                    px.copy_from_slice(&WHITE_RGBA);
+                }
+            });
+        });
     }
 }

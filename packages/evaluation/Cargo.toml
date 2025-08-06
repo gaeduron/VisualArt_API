@@ -10,6 +10,7 @@ path = "src/lib.rs"
 [dependencies]
 image = "0.24"
 ndarray = "0.15"
+palette = "0.7.6"
 rayon = "1.8"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -23,6 +24,10 @@ path = "examples/basic_usage.rs"
 [[example]]
 name = "benchmark"
 path = "examples/benchmark.rs"
+
+[[example]]
+name = "color_contrast_demo"
+path = "examples/color_contrast_demo.rs"
 
 # [[bin]]
 # name = "evaluate"
