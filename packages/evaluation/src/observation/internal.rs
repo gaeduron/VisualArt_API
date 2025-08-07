@@ -142,7 +142,7 @@ impl ObservationImpl {
         // Find the 5 largest errors efficiently using a single pass
         let mut top5_errors = Vec::with_capacity(5);
         
-        for &error in error_grid.iter() {
+        for &error in error_grid.data.iter() {
             if top5_errors.len() < 5 {
                 top5_errors.push(error);
             } else if error > top5_errors[0] {
@@ -170,7 +170,7 @@ impl ObservationImpl {
     /// 
     /// This function is parallelized and should be optimized for performance
     fn get_error_grid(&self, color: RGBA) -> ErrorGrid {
-        let mut error_grid: ErrorGrid = [0; 100];
+        let mut error_grid = ErrorGrid::new();
 
         let reference_heatmap = self.reference_heatmaps.get(&color).unwrap();
         // test is drawing heatmap has color
@@ -178,7 +178,7 @@ impl ObservationImpl {
             // if the color has no heatmap, we return an error grid with all values set to max(dimention)/10
             // this penalise missing colors
             let max_dimension = std::cmp::max(self.reference_image.dimensions.0, self.reference_image.dimensions.1) as i16;
-            let error_grid = [max_dimension / 10; 100];
+            let error_grid = ErrorGrid::from_array([max_dimension / 10; 100]);
             return error_grid;
         }
 
@@ -216,8 +216,8 @@ impl ObservationImpl {
             // Ensure we're within bounds
             if grid_x < 10 && grid_y < 10 {
                 let index = grid_y * 10 + grid_x;
-                if *error > error_grid[index] {
-                    error_grid[index] = *error;
+                if *error > error_grid.data[index] {
+                    error_grid.data[index] = *error;
                 }
             }
         }

@@ -4,6 +4,7 @@
 //! The internal implementation can change without breaking external code.
 
 mod internal;
+mod wasm_adapter;
 
 use crate::types::EvaluationReport;
 
@@ -12,6 +13,7 @@ mod tests;
 
 // Re-export types for convenience
 pub use crate::image::Image;
+pub use wasm_adapter::WasmObservation;
 
 /// Tracks drawing observation
 /// 
@@ -82,4 +84,4 @@ impl Observation {
     pub fn get_evaluation(&self) -> Result<EvaluationReport, String> {
         self.inner.get_evaluation()
     }
-} 
+}

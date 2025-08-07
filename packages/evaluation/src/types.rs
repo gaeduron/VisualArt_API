@@ -1,6 +1,7 @@
 //! Type definitions for the evaluation system
 
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 /// Type alias for RGBA color values
 pub type RGBA = [u8; 4]; // [R, G, B, A]
@@ -29,7 +30,28 @@ pub type Image2DArray = Vec<Vec<RGBA>>;
 pub type HeatmapMatrix = Vec<Vec<i16>>;
 
 /// Error grid is a 10x10 grid of i16 values
-pub type ErrorGrid = [i16; 100];
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ErrorGrid {
+    pub data: Vec<i16>,
+}
+
+impl ErrorGrid {
+    pub fn new() -> Self {
+        Self { data: vec![0; 100] }
+    }
+    
+    pub fn from_array(data: [i16; 100]) -> Self {
+        Self { data: data.to_vec() }
+    }
+    
+    pub fn as_array(&self) -> [i16; 100] {
+        let mut result = [0; 100];
+        for (i, &value) in self.data.iter().take(100).enumerate() {
+            result[i] = value;
+        }
+        result
+    }
+}
 
 /// Statistics for the evaluation
 /// 
@@ -40,6 +62,7 @@ pub type ErrorGrid = [i16; 100];
 /// pixels_per_color_per_second:  pixels_per_color_count["all-non-white"]/total_duration
 /// 
 /// top5_error_by_color: string is the #hex color, number is the error rate, top5_error_by_color["all-non-white"] is the top 5 largest error in the error grid
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvaluationStatistics {
     pub pixels_per_color_count: HashMap<RGBA, u32>,
     pub top5_error_by_color: HashMap<RGBA, f32>,
@@ -49,6 +72,7 @@ pub struct EvaluationStatistics {
 }
 
 /// Evaluation report
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvaluationReport {
     pub statistics: EvaluationStatistics,
 }

@@ -4,6 +4,7 @@ use crate::types::{Image2DArray, ImageDimensions, RGBA};
 use std::collections::HashMap;
 use rayon::prelude::*;
 use palette::{Oklab, Srgb as SrgbColor, IntoColor};
+use serde::{Serialize, Deserialize};
 
 #[cfg(test)]
 mod tests;
@@ -17,7 +18,7 @@ const DEFAULT_MAIN_COLORS: [RGBA; 6] = [
     [255, 255, 255, 255], // white
 ];
 /// Simple image wrapper with utility methods
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Image {
     pub pixels: Image2DArray,
     pub dimensions: ImageDimensions,
@@ -182,7 +183,7 @@ impl Image {
                     return;
                 }
 
-                // Ignore l’alpha pour la distance, mais on le garde en sortie
+                // Ignore l'alpha pour la distance, mais on le garde en sortie
                 let lab: Oklab = SrgbColor::<u8>::from([px[0], px[1], px[2]])
                 .into_format::<f32>()
                 .into_linear()
@@ -205,19 +206,18 @@ impl Image {
                     return;
                 }
 
-                // Find the closest target color
-                let mut best_idx = None;
+                // --- 3. Find the closest color in the palette
                 let mut best_d = f32::MAX;
+                let mut best_idx: Option<usize> = None;
 
-                for (i, target) in palette_ok.iter().enumerate() {
-                    let d = oklab_dist(&lab, target);
+                for (i, &palette_color) in palette_ok.iter().enumerate() {
+                    let d = oklab_dist(&lab, &palette_color);
                     if d < best_d {
                         best_d = d;
                         best_idx = Some(i);
                     }
                 }
 
-                // Apply the color if close enough, otherwise set to white
                 if let Some(i) = best_idx {
                     if best_d <= threshold {
                         let rgb = main_colors[i];
