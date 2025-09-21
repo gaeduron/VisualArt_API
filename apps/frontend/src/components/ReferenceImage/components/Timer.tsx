@@ -73,11 +73,12 @@ function Timer({
 
     return (
         <div
-            className="
+            className={`
                 p-2 rounded-lg hover:cursor-pointer hover:bg-gray-100
-                font-mono text-lg font-bold text-gray-600
+                font-mono text-lg font-bold
                 flex items-center
-            "
+                ${paused ? "text-gray-400" : "text-gray-600" }
+            `}
             onClick={handleToggleDisplayMode}
         >
             <TimeDisplay

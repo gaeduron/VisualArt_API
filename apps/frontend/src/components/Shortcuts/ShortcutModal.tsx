@@ -21,7 +21,7 @@ interface ShortcutModalProps {
 
 const ShortcutModal = ({ shortcuts }: ShortcutModalProps) => {
   return (
-    <DialogContent className="max-w-md max-h-96">
+    <DialogContent className="max-w-md max-h-96 overflow-scroll">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
           <DialogDescription>
