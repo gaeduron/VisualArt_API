@@ -28,9 +28,6 @@ const Workspace = () => {
     
     const result = evaluate(imageUrl, userDrawingDataUrl);
     pushToEvaluationStore(result);
-    
-    console.log('Evaluation result:', result);
-    console.log('Evaluation store now has:', evaluationStore.length + 1, 'results');
   };
 
   const toggleHistory = () => {
@@ -41,7 +38,7 @@ const Workspace = () => {
   return (
     <div className="min-h-screen bg-gray-200">
       {/* Main content area */}
-      <div className="p-32 flex items-center justify-center gap-6 md:flex-row md:items-start">
+      <div className="pt-[42px] flex items-center justify-center gap-6 md:flex-row md:items-start">
         <ReferenceImage imageUrl={imageUrl} isLoading={isLoading} error={error} />
         <Canvas 
           onEvaluate={handleEvaluate}
