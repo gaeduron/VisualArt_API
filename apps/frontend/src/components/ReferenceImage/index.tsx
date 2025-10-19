@@ -5,9 +5,10 @@ import { cn } from '@/lib/utils';
 import { ActionBar } from '@/components/ui/actionBar'
 import TimerOnOffButton from './components/TimerOnOffButton';
 import Timer from './components/Timer'
-import { useState, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useShortcutRegistry } from '@/lib/shortcuts/useShortcutRegistry';
 import { useReferenceActions } from './hooks/useReferenceActions'
+import useObservationContext from '@/components/Workspace/hooks/useObservationContext';
 export interface ReferenceImageProps {
   imageUrl?: string;
   isLoading?: boolean;
@@ -30,26 +31,19 @@ const ReferenceImage = ({
   onImageLoad,
   alt = 'Reference image',
 }: ReferenceImageProps) => {
-  const [startTime, setStartTime] = useState(0)
-  const [previouslyElapsedTime, setPreviouslyElapsedTime] = useState(0);
-  const [timerPaused, setTimerPaused] = useState(true);
-
-  const handleStart = useCallback(() => {
-    setTimerPaused(false)
-    setStartTime(Date.now());
-  }, [])
-
-  const handlePause = useCallback(() => {
-    setTimerPaused(true)
-    const timeElapsed = Date.now() - startTime;
-    setPreviouslyElapsedTime(previouslyElapsedTime + timeElapsed);
-  }, [startTime, previouslyElapsedTime])
+  const {
+    startTimer,
+    stopTimer,
+    startedAt,
+    paused,
+    previouslyElapsedTime,
+  } = useObservationContext();
 
   const pauseOrStart = useMemo(() => {
-    if (timerPaused) return handleStart
-    return handlePause
+    if (paused) return startTimer
+    return stopTimer
 
-  }, [timerPaused, handlePause, handleStart])
+  }, [paused, startTimer, stopTimer])
 
   useShortcutRegistry('reference', useReferenceActions(
     { pauseOrStart }
@@ -83,14 +77,14 @@ const ReferenceImage = ({
       </div>
       <ActionBar>
         <TimerOnOffButton
-          onStart={handleStart}
-          onPause={handlePause}
-          paused={timerPaused}
+          onStart={startTimer}
+          onPause={stopTimer}
+          paused={paused}
         />
         <Timer
-          startTime={startTime}
+          startTime={startedAt || 0}
           previouslyElapsedTime={previouslyElapsedTime}
-          paused={timerPaused}
+          paused={paused}
         />
       </ActionBar>
     </div>

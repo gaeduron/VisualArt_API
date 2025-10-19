@@ -11,13 +11,13 @@ function millisecondsToFmt(milliseconds: number): {time: string, ms: string} {
     let ms = timeDate.getMilliseconds().toString().slice(0,2)
     if (ms.length == 0) ms = "00"
     if (ms.length == 1) ms = `${ms}0`
-    let time = timeDate.toLocaleTimeString("FR")
-    // @TODO: IMPORTANT Remove Timezone from hour format
-    // currently the hours dependends on the your timezone e.g in france 0 hour = 2 h
-    // we need UTC+0 to me set for this one 
-    if (timeDate.getHours() == 4) {
-        time = time.slice(3)
-    }
+    const time = timeDate.toLocaleTimeString("FR", {
+        timeZone: "UTC",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    })
     return { time, ms }
 }
 
