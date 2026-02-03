@@ -21,7 +21,7 @@ const DEFAULT_REFERENCE = "/drawing_reference.png"
 const Workspace = () => {
   const { imageUrl, isLoading, error } = useReferenceImage(DEFAULT_REFERENCE);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  // const observation = Observation.new(imageUrl);
+  // const observation = new Observation([[1,2,3]]);
   
   const { evaluate, evaluationStore, pushToEvaluationStore } = useEvaluation();
 
