@@ -7,6 +7,7 @@ import EvaluationHistory from '../EvaluationHistory';
 import { default as EvaluationHistoryToggleButton } from '../EvaluationHistory/components/ToggleButton';
 import { useReferenceImage } from '../ReferenceImage/hooks/useReferenceImage';
 import { useEvaluation } from '../Canvas/hooks/useEvaluation';
+// import { WasmObservation as Observation } from 'evaluation';
 
 const DEFAULT_REFERENCE = "/drawing_reference.png"
 
@@ -20,6 +21,7 @@ const DEFAULT_REFERENCE = "/drawing_reference.png"
 const Workspace = () => {
   const { imageUrl, isLoading, error } = useReferenceImage(DEFAULT_REFERENCE);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // const observation = Observation.new(imageUrl);
   
   const { evaluate, evaluationStore, pushToEvaluationStore } = useEvaluation();
 

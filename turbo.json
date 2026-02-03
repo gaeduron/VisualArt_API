@@ -4,12 +4,15 @@
     "fast-utils": {
       "outputs": ["packages/fast_utils/pkg/**"]
     },
+    "evaluation": {
+      "outputs": ["packages/evaluation/pkg/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^build", "fast-utils"],
+      "dependsOn": ["^build", "fast-utils", "evaluation"],
       "outputs": ["dist/**", ".next/**"]
     },
     "lint": {},

@@ -39,3 +39,12 @@ path = "examples/color_contrast_demo.rs"
 # [[bin]]
 # name = "evaluate"
 # path = "src/main.rs" 
+
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[package.metadata.wasm-pack.profile.profiling]
+wasm-opt = false
