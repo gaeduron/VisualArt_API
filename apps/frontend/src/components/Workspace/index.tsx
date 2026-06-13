@@ -7,6 +7,7 @@ import EvaluationHistory from '../EvaluationHistory';
 import { default as EvaluationHistoryToggleButton } from '../EvaluationHistory/components/ToggleButton';
 import { useReferenceImage } from '../ReferenceImage/hooks/useReferenceImage';
 import { useEvaluation } from '../Canvas/hooks/useEvaluation';
+// import { WasmObservation as Observation } from 'evaluation';
 
 const DEFAULT_REFERENCE = "/drawing_reference.png"
 
@@ -20,6 +21,7 @@ const DEFAULT_REFERENCE = "/drawing_reference.png"
 const Workspace = () => {
   const { imageUrl, isLoading, error } = useReferenceImage(DEFAULT_REFERENCE);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // const observation = new Observation([[1,2,3]]);
   
   const { evaluate, evaluationStore, pushToEvaluationStore } = useEvaluation();
 
@@ -28,9 +30,6 @@ const Workspace = () => {
     
     const result = evaluate(imageUrl, userDrawingDataUrl);
     pushToEvaluationStore(result);
-    
-    console.log('Evaluation result:', result);
-    console.log('Evaluation store now has:', evaluationStore.length + 1, 'results');
   };
 
   const toggleHistory = () => {
@@ -41,7 +40,7 @@ const Workspace = () => {
   return (
     <div className="min-h-screen bg-gray-200">
       {/* Main content area */}
-      <div className="p-32 flex items-center justify-center gap-6 md:flex-row md:items-start">
+      <div className="pt-[42px] flex items-center justify-center gap-6 md:flex-row md:items-start">
         <ReferenceImage imageUrl={imageUrl} isLoading={isLoading} error={error} />
         <Canvas 
           onEvaluate={handleEvaluate}

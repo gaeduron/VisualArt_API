@@ -1,0 +1,26 @@
+{
+  "name": "evaluation",
+  "version": "0.1.0",
+  "description": "Image evaluation in Rust compiled to WASM",
+  "main": "pkg/evaluation.js",
+  "module": "pkg/evaluation.js",
+  "types": "pkg/evaluation.d.ts",
+  "exports": {
+    ".": "./pkg/evaluation.js"
+  },
+  "files": [
+    "pkg/"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --target bundler --out-dir pkg",
+    "build:watch": "wasm-pack build --target bundler --out-dir pkg --watch",
+    "test": "wasm-pack test --headless --firefox",
+    "clean": "rm -rf pkg target"
+  },
+  "keywords": ["wasm", "rust", "image", "evaluation"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wasm-pack": "^0.12.0"
+  }
+} 

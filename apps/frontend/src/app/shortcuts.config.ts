@@ -43,6 +43,12 @@ export const globalShortcuts: GlobalShortcutConfig = {
     action: 'evaluate'
   },
 
+  /** Reference Shortcuts **/
+  'p': {
+    component: 'reference',
+    action: 'pause/start'
+  }
+
   // Future: App-level shortcuts
   // 'cmd+s': {
   //   component: 'app',

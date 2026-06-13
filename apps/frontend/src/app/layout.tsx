@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import ShortcutProvider from "./ShortcutProvider";
 import "./globals.css";
+import ObservationContextProvider from "@/contexts/ObservationContextProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +28,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ShortcutProvider>
-          {children}
+          <ObservationContextProvider>
+            {children}
+          </ObservationContextProvider>
         </ShortcutProvider>
       </body>
     </html>

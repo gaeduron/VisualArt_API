@@ -2,7 +2,13 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-
+import { ActionBar } from '@/components/ui/actionBar'
+import TimerOnOffButton from './components/TimerOnOffButton';
+import Timer from './components/Timer'
+import { useMemo } from 'react';
+import { useShortcutRegistry } from '@/lib/shortcuts/useShortcutRegistry';
+import { useReferenceActions } from './hooks/useReferenceActions'
+import useObservationContext from '@/components/Workspace/hooks/useObservationContext';
 export interface ReferenceImageProps {
   imageUrl?: string;
   isLoading?: boolean;
@@ -25,8 +31,27 @@ const ReferenceImage = ({
   onImageLoad,
   alt = 'Reference image',
 }: ReferenceImageProps) => {
+  const {
+    startTimer,
+    stopTimer,
+    startedAt,
+    paused,
+    previouslyElapsedTime,
+  } = useObservationContext();
+
+  const pauseOrStart = useMemo(() => {
+    if (paused) return startTimer
+    return stopTimer
+
+  }, [paused, startTimer, stopTimer])
+
+  useShortcutRegistry('reference', useReferenceActions(
+    { pauseOrStart }
+  ));
+
   return (
     <div className="flex flex-col items-start gap-2">
+      <span className="text-sm font-medium text-gray-600 bg-white p-2 rounded-lg">Reference</span>
       <div className="aspect-square w-[500px] h-[500px] border-3 border-gray-300 rounded-lg overflow-hidden flex items-center justify-center bg-white relative">
         {isLoading && (
           <span className="text-sm text-gray-500">Loading...</span>
@@ -50,7 +75,18 @@ const ReferenceImage = ({
           </span>
         )}
       </div>
-      <span className="text-sm font-medium text-gray-600 bg-white p-2 rounded-lg">Reference</span>
+      <ActionBar>
+        <TimerOnOffButton
+          onStart={startTimer}
+          onPause={stopTimer}
+          paused={paused}
+        />
+        <Timer
+          startTime={startedAt || 0}
+          previouslyElapsedTime={previouslyElapsedTime}
+          paused={paused}
+        />
+      </ActionBar>
     </div>
   );
 };

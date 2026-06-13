@@ -7,6 +7,7 @@ import ToolSelector from './components/ToolSelector';
 import ClearCanvasButton from './components/ClearCanvasButton';
 import ExportButton from './components/ExportButton';
 import EvaluateButton from './components/EvaluateButton';
+import { ActionBar, VertivalSeparator } from '@/components/ui/actionBar' 
 import { CanvasConfig, ToolSettings, DrawingTool } from './types';
 import { useUndoRedo } from './hooks/useUndoRedo';
 import { useCanvasActions } from './hooks/useCanvasActions';
@@ -63,7 +64,6 @@ const Canvas = ({ onEvaluate }: CanvasProps) => {
   });
 
   const handleEvaluate = async () => {
-    console.log('handleEvaluate');
     const userDrawingDataUrl = await exportAsPNG({ backgroundColor: 'white' });
     if (userDrawingDataUrl) {
       onEvaluate(userDrawingDataUrl);
@@ -90,7 +90,7 @@ const Canvas = ({ onEvaluate }: CanvasProps) => {
 
   return (
     <div className="flex flex-col items-start gap-2">
-
+          <span className="text-sm font-medium text-gray-600 bg-white p-2 rounded-lg">Observation</span>
           <DrawingCanvas
             ref={canvasRef}
             config={canvasConfig}
@@ -99,45 +99,33 @@ const Canvas = ({ onEvaluate }: CanvasProps) => {
             onLinesChange={pushToHistory}
           />
           
-          {/* Floating toolbar positioned at bottom left */}
-          <div className="flex gap-6">
-            <div className="bg-white rounded-lg shadow-lg p-3">
-              <div className="flex gap-2">
-                <ToolSelector
-                  currentTool={currentTool}
-                  onToolChange={setCurrentTool}
-                  />
-                
-                <div className="w-px bg-gray-200 mx-1"></div>
-                
-                <UndoRedoControls
-                  onUndo={undo}
-                  onRedo={redo}
-                  canUndo={canUndo}
-                  canRedo={canRedo}
-                  />
-                
-                <div className="w-px bg-gray-200 mx-1"></div>
-                
-                <EvaluateButton
-                  onEvaluate={handleEvaluate}
-                  disabled={lines.length === 0}
-                />
-                
-                <ExportButton
-                  onExport={handleExport}
-                  disabled={lines.length === 0}
-                />
-                
-                <div className="w-px bg-gray-200 mx-1"></div>
-
-                <ClearCanvasButton
-                  onClear={clearCanvas}
-                  disabled={lines.length === 0}
-                />
-              </div>
-            </div>
-          </div>
+          <ActionBar>
+            <ToolSelector
+              currentTool={currentTool}
+              onToolChange={setCurrentTool}
+            />
+            <VertivalSeparator/>
+            <UndoRedoControls
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              />
+            <VertivalSeparator/>
+            <EvaluateButton
+              onEvaluate={handleEvaluate}
+              disabled={lines.length === 0}
+              />
+            <ExportButton
+              onExport={handleExport}
+              disabled={lines.length === 0}
+            />
+            <VertivalSeparator/>
+            <ClearCanvasButton
+              onClear={clearCanvas}
+              disabled={lines.length === 0}
+            />
+          </ActionBar>
     </div>
   );
 };
